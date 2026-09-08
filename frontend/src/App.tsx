@@ -2,10 +2,13 @@ import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/authStore'
 import { HomePage } from '@/pages/HomePage'
+import { LoginPage } from '@/pages/LoginPage'
+import { RegisterPage } from '@/pages/RegisterPage'
+import { VocabularyPage } from '@/pages/VocabularyPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,7 +20,7 @@ const queryClient = new QueryClient({
 })
 
 function Navigation() {
-  const { isAuthenticated, logout } = useAuthStore()
+  const { isAuthenticated, logout, user } = useAuthStore()
 
   return (
     <nav className="bg-white border-b border-gray-200">
@@ -37,26 +40,47 @@ function Navigation() {
                 Home
               </Link>
               {isAuthenticated && (
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
-                >
-                  <LayoutDashboard className="h-4 w-4 mr-1" />
-                  Dashboard
-                </Link>
+                <>
+                  <Link
+                    to="/vocabulary"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Library className="h-4 w-4 mr-1" />
+                    Vocabulary
+                  </Link>
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <LayoutDashboard className="h-4 w-4 mr-1" />
+                    Dashboard
+                  </Link>
+                </>
               )}
             </div>
           </div>
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
-              <Button variant="ghost" size="sm" onClick={logout} className="flex items-center gap-1">
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+                  {user?.full_name}
+                </span>
+                <Button variant="ghost" size="sm" onClick={logout} className="flex items-center gap-1">
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
             ) : (
-              <Link to="/login">
-                <Button size="sm">Login</Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm">Sign up</Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
@@ -89,6 +113,16 @@ export function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/vocabulary"
+              element={
+                <ProtectedRoute>
+                  <VocabularyPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dashboard"
               element={

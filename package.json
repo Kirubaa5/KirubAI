@@ -9,6 +9,9 @@
     "test": "npm run test:frontend && npm run test:backend",
     "test:frontend": "cd frontend && npm run test",
     "test:backend": "cd backend && python -m pytest",
+    "typecheck": "npm run typecheck:frontend",
+    "build": "npm run build:frontend",
+    "lint": "npm run lint:frontend",
     "build:frontend": "cd frontend && npm run build",
     "typecheck:frontend": "cd frontend && npm run typecheck",
     "lint:frontend": "cd frontend && npm run lint"

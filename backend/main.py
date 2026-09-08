@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
+from routers import auth, users, vocabulary
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -16,6 +17,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include Routers with API v1 prefix
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
+app.include_router(vocabulary.router, prefix="/api/v1")
 
 
 @app.get("/health")
