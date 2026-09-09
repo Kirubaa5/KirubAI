@@ -8,6 +8,7 @@ from ai.schemas import (
     ExampleSetAI,
     ScenarioAI,
     EvaluationAI,
+    ReviewEvaluationAI,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -151,6 +152,30 @@ class MockLLMProvider(LLMProvider):
                     feedback=f"Make sure to explicitly use the target word '{word}' or one of its grammatical forms in your response.",
                     improved_version="I would hesitate to accept this new assignment without adjusting my existing priorities first.",
                     vocabulary_used_correctly=False,
+                )
+
+        if issubclass(response_schema, ReviewEvaluationAI):
+            user_text = ""
+            resp_m = re.search(r'Learner\'s response:\s*\n?["\']?(.*?)["\']?\s*(?:\n|Instructions|$)', prompt, re.DOTALL)
+            if resp_m:
+                user_text = resp_m.group(1).strip()
+
+            word_root = word.lower()[:4] if len(word) >= 4 else word.lower()
+            contains_word = word.lower() in user_text.lower() or word_root in user_text.lower()
+
+            if contains_word and len(user_text) > 0:
+                return ReviewEvaluationAI(
+                    is_correct=True,
+                    score=10.0 if user_text.lower() == word.lower() else 9.0,
+                    feedback=f"Excellent! You accurately recalled '{word}'.",
+                    recalled_word=word,
+                )
+            else:
+                return ReviewEvaluationAI(
+                    is_correct=False,
+                    score=3.0,
+                    feedback=f"Not quite. The target word was '{word}'. Keep practicing to strengthen your memory!",
+                    recalled_word=None,
                 )
 
         raise ValueError(f"Unsupported mock schema: {response_schema}")

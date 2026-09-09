@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -223,8 +223,12 @@ class PracticeService:
             practice_rate = vocab.successful_usage_count / max(vocab.practice_count, 1)
             vocab.mastery_score = min(1.0, round(0.25 * practice_rate + 0.15, 2))
             user.xp += 15
+            user.level = max(1, (user.xp // 100) + 1)
+            if vocab.next_review_at is None:
+                vocab.next_review_at = datetime.now(timezone.utc) + timedelta(days=vocab.review_interval_days or 1)
         else:
             user.xp += 5
+            user.level = max(1, (user.xp // 100) + 1)
 
         db.commit()
         db.refresh(attempt)

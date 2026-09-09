@@ -59,3 +59,14 @@ class EvaluationAI(BaseModel):
     vocabulary_used_correctly: bool = Field(..., description="Whether the target word was used with correct meaning and form")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReviewEvaluationAI(BaseModel):
+    """AI evaluation of user's active recall / review response."""
+    is_correct: bool = Field(..., description="Whether the user correctly recalled or used the target word")
+    score: float = Field(..., ge=0.0, le=10.0, description="Score from 0.0 to 10.0")
+    feedback: str = Field(..., description="Encouraging and constructive feedback on the recall attempt")
+    recalled_word: Optional[str] = Field(None, description="The target word or form identified from the response")
+
+    model_config = ConfigDict(from_attributes=True)
+

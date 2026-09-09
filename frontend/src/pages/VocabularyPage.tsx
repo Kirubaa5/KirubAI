@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { vocabularyApi } from '@/api/vocabulary'
+import { reviewsApi } from '@/api/reviews'
 import { Vocabulary, VocabularyStatus } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -9,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
-import { Plus, Search, Trash2, BookOpen, Play } from 'lucide-react'
+import { Plus, Search, Trash2, BookOpen, Play, Brain } from 'lucide-react'
 
 const statusColors: Record<VocabularyStatus, { bg: string; text: string; label: string }> = {
   new: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'New' },
@@ -37,6 +38,11 @@ export function VocabularyPage() {
         status: selectedStatus || undefined,
         per_page: 50,
       }),
+  })
+
+  const { data: dueData } = useQuery({
+    queryKey: ['reviews-due'],
+    queryFn: () => reviewsApi.getDue(),
   })
 
   const addMutation = useMutation({
@@ -78,10 +84,26 @@ export function VocabularyPage() {
               Track, practice, and master your English vocabulary
             </p>
           </div>
-          <Button onClick={() => setIsAdding(!isAdding)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add New Word
-          </Button>
+          <div className="flex items-center gap-3">
+            {dueData && dueData.due_count > 0 && (
+              <Link to="/reviews">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100"
+                >
+                  <Brain className="h-4 w-4 text-purple-600" />
+                  <span>Reviews Due</span>
+                  <span className="px-1.5 py-0.5 text-xs font-bold rounded-full bg-purple-600 text-white">
+                    {dueData.due_count}
+                  </span>
+                </Button>
+              </Link>
+            )}
+            <Button onClick={() => setIsAdding(!isAdding)} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add New Word
+            </Button>
+          </div>
         </div>
 
         {/* Add Word Modal/Inline form */}

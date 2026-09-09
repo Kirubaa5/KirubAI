@@ -125,3 +125,71 @@ export interface PracticeSessionListResponse {
   per_page: number
   pages: number
 }
+
+// Phase 5: Spaced Repetition & Review Types
+export interface ReviewPrompt {
+  prompt_type: string
+  definition?: string
+  part_of_speech?: string
+  cloze_sentence?: string
+  hint?: string
+  context_label?: string
+  synonyms_hint?: string[]
+}
+
+export interface DueReviewItem {
+  vocabulary_id: string
+  word: string
+  status: VocabularyStatus
+  mastery_score: number
+  last_reviewed_at?: string
+  next_review_at?: string
+  review_interval_days: number
+  review_type: string
+  prompt: ReviewPrompt
+}
+
+export interface DueReviewsResponse {
+  due_count: number
+  items: DueReviewItem[]
+}
+
+export interface ReviewSubmitResponse {
+  recall_successful: boolean
+  score: number
+  feedback: string
+  previous_status: VocabularyStatus
+  new_status: VocabularyStatus
+  previous_interval_days: number
+  new_interval_days: number
+  next_review_at: string
+  mastery_score: number
+  xp_earned: number
+  target_word: string
+}
+
+export interface ReviewRecord {
+  id: string
+  user_id: string
+  vocabulary_id: string
+  target_word?: string
+  review_type: string
+  recall_successful: boolean
+  response_text?: string
+  score?: number
+  feedback?: string
+  previous_interval_days: number
+  new_interval_days: number
+  previous_status: VocabularyStatus
+  new_status: VocabularyStatus
+  reviewed_at: string
+}
+
+export interface ReviewHistoryResponse {
+  items: ReviewRecord[]
+  total: number
+  page: number
+  per_page: number
+  pages: number
+}
+

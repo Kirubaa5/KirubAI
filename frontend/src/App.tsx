@@ -7,10 +7,11 @@ import { RegisterPage } from '@/pages/RegisterPage'
 import { VocabularyPage } from '@/pages/VocabularyPage'
 import { LearnPage } from '@/pages/LearnPage'
 import { PracticePage } from '@/pages/PracticePage'
+import { ReviewsPage } from '@/pages/ReviewsPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,6 +50,13 @@ function Navigation() {
                   >
                     <Library className="h-4 w-4 mr-1" />
                     Vocabulary
+                  </Link>
+                  <Link
+                    to="/reviews"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Brain className="h-4 w-4 mr-1 text-purple-600" />
+                    Reviews
                   </Link>
                   <Link
                     to="/dashboard"
@@ -138,6 +146,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <PracticePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reviews"
+              element={
+                <ProtectedRoute>
+                  <ReviewsPage />
                 </ProtectedRoute>
               }
             />
