@@ -5,6 +5,7 @@ import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { VocabularyPage } from '@/pages/VocabularyPage'
+import { LearnPage } from '@/pages/LearnPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
@@ -120,6 +121,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <VocabularyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vocabulary/:id/learn"
+              element={
+                <ProtectedRoute>
+                  <LearnPage />
                 </ProtectedRoute>
               }
             />

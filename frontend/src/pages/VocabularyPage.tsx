@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { vocabularyApi } from '@/api/vocabulary'
 import { Vocabulary, VocabularyStatus } from '@/types'
@@ -239,6 +240,17 @@ export function VocabularyPage() {
                           {vocab.successful_usage_count}
                         </span>
                       </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-end">
+                      <Link
+                        to={`/vocabulary/${vocab.id}/learn`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {vocab.status === 'new' ? 'Learn Word' : 'Review Explanation'}
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

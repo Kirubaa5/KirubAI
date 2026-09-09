@@ -26,4 +26,12 @@ export const vocabularyApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/vocabulary/${id}`)
   },
+  getLearningContent: async (id: string): Promise<Vocabulary> => {
+    const res = await apiClient.get<Vocabulary>(`/vocabulary/${id}/learn`)
+    return res.data
+  },
+  markLearned: async (id: string): Promise<Vocabulary> => {
+    const res = await apiClient.post<Vocabulary>(`/vocabulary/${id}/mark-learned`)
+    return res.data
+  },
 }

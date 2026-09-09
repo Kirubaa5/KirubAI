@@ -8,6 +8,7 @@ from schemas.vocabulary import (
     VocabularyListResponse,
 )
 from services.vocabulary_service import VocabularyService
+from services.learning_service import LearningService
 from middleware.auth import get_current_user
 from models.user import User
 
@@ -46,6 +47,32 @@ def add_vocabulary(
 ):
     """Add a new word to user's vocabulary list."""
     vocab = VocabularyService.add_word(db=db, user=current_user, data=data)
+    return VocabularyResponse.model_validate(vocab)
+
+
+@router.get("/{vocab_id}/learn", response_model=VocabularyResponse)
+async def get_word_learning_content(
+    vocab_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get or generate AI learning content (explanation, collocations, forms, 10 examples)."""
+    vocab = await LearningService.get_or_generate_learning_content(
+        db=db,
+        user=current_user,
+        vocab_id=vocab_id,
+    )
+    return VocabularyResponse.model_validate(vocab)
+
+
+@router.post("/{vocab_id}/mark-learned", response_model=VocabularyResponse)
+def mark_word_learned(
+    vocab_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Mark a word as learned and transition its status."""
+    vocab = LearningService.mark_word_learned(db=db, user=current_user, vocab_id=vocab_id)
     return VocabularyResponse.model_validate(vocab)
 
 
