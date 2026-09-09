@@ -15,6 +15,7 @@ import {
   MessageSquare,
   TrendingUp,
   Award,
+  Play,
 } from 'lucide-react'
 
 const cefrColors: Record<string, { bg: string; text: string }> = {
@@ -372,7 +373,7 @@ export function LearnPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               {vocab.status === 'new' ? (
                 <Button
                   onClick={() => markLearnedMutation.mutate(vocab.id)}
@@ -382,15 +383,23 @@ export function LearnPage() {
                   <CheckCircle2 className="h-4 w-4" />
                   {markLearnedMutation.isPending ? 'Saving...' : 'Mark as Understood (+10 XP)'}
                 </Button>
-              ) : (
+              ) : null}
+              <Link to={`/practice/${vocab.id}`} className="w-full sm:w-auto">
                 <Button
-                  variant="outline"
-                  onClick={() => navigate('/vocabulary')}
-                  className="w-full sm:w-auto"
+                  variant={vocab.status === 'new' ? 'outline' : 'primary'}
+                  className="w-full sm:w-auto flex items-center justify-center gap-1.5"
                 >
-                  Return to Vocabulary List
+                  <Play className="h-4 w-4" />
+                  Practice Scenarios
                 </Button>
-              )}
+              </Link>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/vocabulary')}
+                className="w-full sm:w-auto"
+              >
+                Return to Vocabulary List
+              </Button>
             </div>
           </CardContent>
         </Card>

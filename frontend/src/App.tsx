@@ -6,6 +6,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { VocabularyPage } from '@/pages/VocabularyPage'
 import { LearnPage } from '@/pages/LearnPage'
+import { PracticePage } from '@/pages/PracticePage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
@@ -129,6 +130,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <LearnPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/practice/:id"
+              element={
+                <ProtectedRoute>
+                  <PracticePage />
                 </ProtectedRoute>
               }
             />

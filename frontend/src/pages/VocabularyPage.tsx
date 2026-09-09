@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
-import { Plus, Search, Trash2, BookOpen } from 'lucide-react'
+import { Plus, Search, Trash2, BookOpen, Play } from 'lucide-react'
 
 const statusColors: Record<VocabularyStatus, { bg: string; text: string; label: string }> = {
   new: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'New' },
@@ -243,13 +243,21 @@ export function VocabularyPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-end">
+                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
                       <Link
                         to={`/vocabulary/${vocab.id}/learn`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
                       >
-                        <BookOpen className="h-3.5 w-3.5" />
-                        {vocab.status === 'new' ? 'Learn Word' : 'Review Explanation'}
+                        <BookOpen className="h-3.5 w-3.5 text-gray-500" />
+                        {vocab.status === 'new' ? 'Learn' : 'Details'}
+                      </Link>
+
+                      <Link
+                        to={`/practice/${vocab.id}`}
+                        className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                      >
+                        <Play className="h-3.5 w-3.5 text-blue-600" />
+                        Practice
                       </Link>
                     </div>
                   </CardContent>

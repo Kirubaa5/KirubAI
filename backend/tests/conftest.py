@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 from database import Base, get_db
 from main import app
 from models.user import User
+from models.vocabulary import Vocabulary
 from utils.security import hash_password, create_access_token
 
 # Use in-memory SQLite database for tests
@@ -75,3 +76,17 @@ def test_user(db_session):
 def auth_headers(test_user):
     token = create_access_token({"sub": test_user.id, "email": test_user.email})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def test_vocabulary(db_session, test_user):
+    vocab = Vocabulary(
+        user_id=test_user.id,
+        word="hesitate",
+        status="new",
+        mastery_score=0.0,
+    )
+    db_session.add(vocab)
+    db_session.commit()
+    db_session.refresh(vocab)
+    return vocab

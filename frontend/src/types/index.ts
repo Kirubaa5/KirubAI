@@ -51,3 +51,77 @@ export interface VocabularyListResponse {
   per_page: number
   pages: number
 }
+
+// Phase 4: Practice Engine Types
+export interface Scenario {
+  situation: string
+  prompt: string
+  context_hint?: string
+}
+
+export interface PracticeScores {
+  vocabulary_usage: number
+  grammar: number
+  context: number
+  naturalness: number
+  overall: number
+}
+
+export interface PracticeAttempt {
+  id: string
+  session_id: string
+  vocabulary_id: string
+  target_word: string
+  scenario_text: string
+  user_response: string
+  scores: PracticeScores
+  feedback: string
+  improved_version?: string
+  is_successful: boolean
+  created_at: string
+}
+
+export interface PracticeStartResponse {
+  session_id: string
+  vocabulary_id: string
+  target_word: string
+  scenario: Scenario
+}
+
+export interface PracticeSubmitResponse {
+  attempt_id: string
+  session_id: string
+  vocabulary_id: string
+  target_word: string
+  scenario_text: string
+  user_response: string
+  scores: PracticeScores
+  feedback: string
+  improved_version?: string
+  is_successful: boolean
+  can_continue: boolean
+  next_scenario?: Scenario
+}
+
+export interface PracticeSession {
+  id: string
+  user_id: string
+  vocabulary_id: string
+  target_word?: string
+  session_type: string
+  status: string
+  total_attempts: number
+  successful_attempts: number
+  average_score?: number
+  started_at: string
+  completed_at?: string
+  attempts: PracticeAttempt[]
+}
+
+export interface PracticeSessionListResponse {
+  items: PracticeSession[]
+  total: number
+  page: number
+  per_page: number
+  pages: number
+}

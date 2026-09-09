@@ -1,3 +1,4 @@
+import re
 from typing import TypeVar, Type, List, Dict, Optional
 from pydantic import BaseModel
 from ai.provider import LLMProvider
@@ -22,6 +23,7 @@ class MockLLMProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: int = 1000,
     ) -> str:
+        _ = (prompt, system_prompt, temperature, max_tokens)
         return "This is a mocked LLM text response."
 
     async def generate_structured(
@@ -31,18 +33,21 @@ class MockLLMProvider(LLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
     ) -> T:
-        # Check prompt for word name or fallback
+        _ = (system_prompt, temperature)
+        # Check prompt for target word
         word = "hesitate"
-        if "Explain the English word" in prompt or "word \"" in prompt:
-            import re
-            match = re.search(r'word\s*["\']?([a-zA-Z\s\-]+)["\']?', prompt)
-            if match:
-                word = match.group(1).strip()
+        word_match = re.search(r'(?:word\s*["\']|target English word\s*["\'])([a-zA-Z\s\-]+)["\']', prompt)
+        if word_match:
+            word = word_match.group(1).strip()
+        elif "Explain the English word" in prompt or "word \"" in prompt:
+            m = re.search(r'word\s*["\']?([a-zA-Z\s\-]+)["\']?', prompt)
+            if m:
+                word = m.group(1).strip()
 
         if issubclass(response_schema, WordExplanationAI):
             return WordExplanationAI(
-                simple_meaning=f"To pause before saying or doing something because you are uncertain or nervous.",
-                contextual_meaning=f"Used when someone shows reluctance or pauses to make a thoughtful choice in professional, academic, or social situations.",
+                simple_meaning="To pause before saying or doing something because you are uncertain or nervous.",
+                contextual_meaning="Used when someone shows reluctance or pauses to make a thoughtful choice in professional, academic, or social situations.",
                 part_of_speech="verb",
                 pronunciation_text="HEZ-ih-tayt",
                 synonyms=["pause", "waver", "falter", "dither"],
@@ -117,18 +122,37 @@ class MockLLMProvider(LLMProvider):
             )
 
         if issubclass(response_schema, EvaluationAI):
-            return EvaluationAI(
-                vocabulary_usage_score=9.0,
-                grammar_score=8.5,
-                context_score=9.0,
-                naturalness_score=8.5,
-                overall_score=8.7,
-                feedback=f"Excellent usage of the target vocabulary! Your sentence is contextually accurate and fits the professional scenario perfectly.",
-                improved_version=f"I'd love to help, but I hesitate to commit right away since my current deliverables are already scheduled for this sprint.",
-                vocabulary_used_correctly=True,
-            )
+            user_text = ""
+            resp_m = re.search(r'Learner\'s response:\s*\n?["\']?(.*?)["\']?\s*(?:\n|Evaluate)', prompt, re.DOTALL)
+            if resp_m:
+                user_text = resp_m.group(1).strip()
 
-        # Fallback to schema default instantiation if available
+            word_root = word.lower()[:4] if len(word) >= 4 else word.lower()
+            contains_word = word.lower() in user_text.lower() or word_root in user_text.lower()
+
+            if contains_word and len(user_text) > 5:
+                return EvaluationAI(
+                    vocabulary_usage_score=9.0,
+                    grammar_score=8.5,
+                    context_score=9.0,
+                    naturalness_score=8.5,
+                    overall_score=8.7,
+                    feedback=f"Excellent usage of the target word '{word}'! Your sentence is contextually appropriate and natural.",
+                    improved_version="I'd like to help with this task, but I hesitate to commit right now because my current deliverables are already booked.",
+                    vocabulary_used_correctly=True,
+                )
+            else:
+                return EvaluationAI(
+                    vocabulary_usage_score=2.0,
+                    grammar_score=6.0,
+                    context_score=5.0,
+                    naturalness_score=5.5,
+                    overall_score=4.2,
+                    feedback=f"Make sure to explicitly use the target word '{word}' or one of its grammatical forms in your response.",
+                    improved_version="I would hesitate to accept this new assignment without adjusting my existing priorities first.",
+                    vocabulary_used_correctly=False,
+                )
+
         raise ValueError(f"Unsupported mock schema: {response_schema}")
 
     async def generate_conversation(
@@ -138,4 +162,5 @@ class MockLLMProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: int = 500,
     ) -> str:
+        _ = (messages, system_prompt, temperature, max_tokens)
         return "That sounds like a great perspective! How did you handle that situation next?"
