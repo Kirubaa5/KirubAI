@@ -8,10 +8,11 @@ import { VocabularyPage } from '@/pages/VocabularyPage'
 import { LearnPage } from '@/pages/LearnPage'
 import { PracticePage } from '@/pages/PracticePage'
 import { ReviewsPage } from '@/pages/ReviewsPage'
+import { ConversationsPage } from '@/pages/ConversationsPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +58,13 @@ function Navigation() {
                   >
                     <Brain className="h-4 w-4 mr-1 text-purple-600" />
                     Reviews
+                  </Link>
+                  <Link
+                    to="/conversations"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-1 text-indigo-600" />
+                    Conversations
                   </Link>
                   <Link
                     to="/dashboard"
@@ -154,6 +162,22 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <ReviewsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/conversations"
+              element={
+                <ProtectedRoute>
+                  <ConversationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/conversations/:id"
+              element={
+                <ProtectedRoute>
+                  <ConversationsPage />
                 </ProtectedRoute>
               }
             />

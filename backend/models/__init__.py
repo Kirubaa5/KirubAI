@@ -1,6 +1,12 @@
 from .user import User
 from .vocabulary import Vocabulary, WordDetails, VocabularyExample
-from .practice import PracticeSession, PracticeAttempt, ReviewRecord, ConversationSession
+from .practice import (
+    PracticeSession,
+    PracticeAttempt,
+    ReviewRecord,
+    ConversationSession,
+    ConversationMessage,
+)
 
 __all__ = [
     "User",
@@ -11,4 +17,5 @@ __all__ = [
     "PracticeAttempt",
     "ReviewRecord",
     "ConversationSession",
+    "ConversationMessage",
 ]

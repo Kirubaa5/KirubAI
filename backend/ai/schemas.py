@@ -70,3 +70,46 @@ class ReviewEvaluationAI(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class VocabularyUsageDetailAI(BaseModel):
+    """Per-word evaluation within a conversation."""
+    word: str = Field(..., description="Target vocabulary word")
+    used: bool = Field(..., description="Whether the word was used during the conversation")
+    quality: Optional[float] = Field(None, ge=0.0, le=10.0, description="Usage quality score from 0.0 to 10.0 if used")
+    context: Optional[str] = Field(None, description="Context excerpt or explanation of how the word was used")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ConversationEvaluationAI(BaseModel):
+    """Structured AI output for end-of-conversation evaluation."""
+    vocabulary_details: List[VocabularyUsageDetailAI] = Field(
+        default_factory=list,
+        description="Detailed evaluation breakdown for each target vocabulary word",
+    )
+    vocabulary_used: List[str] = Field(
+        default_factory=list,
+        description="List of target vocabulary words successfully used by the learner",
+    )
+    vocabulary_missed: List[str] = Field(
+        default_factory=list,
+        description="List of target vocabulary words not used during the conversation",
+    )
+    usage_quality: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Dictionary mapping each used target word to its quality score (0.0 to 10.0)",
+    )
+    overall_fluency: float = Field(
+        ...,
+        ge=0.0,
+        le=10.0,
+        description="Overall conversational fluency score from 0.0 to 10.0",
+    )
+    feedback: str = Field(
+        ...,
+        description="Constructive, encouraging feedback on conversational flow, grammar, and vocabulary usage",
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+

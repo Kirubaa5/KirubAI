@@ -9,6 +9,8 @@ from ai.schemas import (
     ScenarioAI,
     EvaluationAI,
     ReviewEvaluationAI,
+    VocabularyUsageDetailAI,
+    ConversationEvaluationAI,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -24,7 +26,11 @@ class MockLLMProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: int = 1000,
     ) -> str:
-        _ = (prompt, system_prompt, temperature, max_tokens)
+        _ = (system_prompt, temperature, max_tokens)
+        if "Start an engaging" in prompt or "topic:" in prompt.lower():
+            topic_match = re.search(r'topic:\s*["\']?([^"\'\n]+)["\']?', prompt, re.IGNORECASE)
+            topic = topic_match.group(1).strip() if topic_match else "career planning"
+            return f"Hey! I'm really looking forward to discussing {topic} with you today. To get us started, what has been on your mind regarding this recently?"
         return "This is a mocked LLM text response."
 
     async def generate_structured(
@@ -178,6 +184,70 @@ class MockLLMProvider(LLMProvider):
                     recalled_word=None,
                 )
 
+        if issubclass(response_schema, ConversationEvaluationAI):
+            # Parse target words from prompt
+            target_words_list = []
+            tw_match = re.search(r'Target Vocabulary Words:\s*([^\n]+)', prompt)
+            if tw_match:
+                raw_words = tw_match.group(1).split(",")
+                for rw in raw_words:
+                    clean = rw.strip().strip("'\"")
+                    if clean and clean.lower() != "none":
+                        target_words_list.append(clean)
+
+            # Parse transcript from prompt
+            transcript = ""
+            tr_match = re.search(r'Conversation Transcript:\s*\n?(.*?)(?:\nEvaluation Instructions:|$)', prompt, re.DOTALL)
+            if tr_match:
+                transcript = tr_match.group(1).lower()
+
+            used_words = []
+            missed_words = []
+            details = []
+            usage_quality = {}
+
+            for tw in target_words_list:
+                # Check if word or stem appears in transcript
+                tw_stem = tw.lower()[:4] if len(tw) >= 4 else tw.lower()
+                if tw.lower() in transcript or tw_stem in transcript:
+                    used_words.append(tw)
+                    quality = 8.5
+                    usage_quality[tw] = quality
+                    details.append(
+                        VocabularyUsageDetailAI(
+                            word=tw,
+                            used=True,
+                            quality=quality,
+                            context=f"Used naturally in conversation: '{tw}'",
+                        )
+                    )
+                else:
+                    missed_words.append(tw)
+                    details.append(
+                        VocabularyUsageDetailAI(
+                            word=tw,
+                            used=False,
+                            quality=None,
+                            context=None,
+                        )
+                    )
+
+            overall_fluency = 8.0 if used_words else 7.0
+            feedback = (
+                f"Great conversation! You naturally incorporated {len(used_words)} target vocabulary words and communicated your ideas effectively."
+                if used_words
+                else "Good conversation! You communicated your ideas clearly. Try incorporating the suggested target words in your next chat to reinforce your vocabulary."
+            )
+
+            return ConversationEvaluationAI(
+                vocabulary_details=details,
+                vocabulary_used=used_words,
+                vocabulary_missed=missed_words,
+                usage_quality=usage_quality,
+                overall_fluency=overall_fluency,
+                feedback=feedback,
+            )
+
         raise ValueError(f"Unsupported mock schema: {response_schema}")
 
     async def generate_conversation(
@@ -187,5 +257,21 @@ class MockLLMProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: int = 500,
     ) -> str:
-        _ = (messages, system_prompt, temperature, max_tokens)
-        return "That sounds like a great perspective! How did you handle that situation next?"
+        _ = (system_prompt, temperature, max_tokens)
+        last_user_msg = ""
+        for m in reversed(messages):
+            if m.get("role") == "user":
+                last_user_msg = m.get("content", "")
+                break
+
+        if "hesitat" in last_user_msg.lower():
+            return "It's completely normal to feel that way. What helps you move past hesitation and make a decision?"
+        elif "confident" in last_user_msg.lower():
+            return "Confidence is key in those situations! How has being confident helped you succeed in your goals?"
+        elif "improve" in last_user_msg.lower():
+            return "Continuous improvement is a fantastic mindset. What specific areas are you focusing on improving next?"
+        elif last_user_msg:
+            return "That's a very thoughtful point! How do you usually approach situations like that in your daily life?"
+
+        return "Hello! I'm excited to chat with you today. What are your thoughts on this topic?"
+

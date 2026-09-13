@@ -193,3 +193,80 @@ export interface ReviewHistoryResponse {
   pages: number
 }
 
+// Phase 6: AI Text Conversation Coach Types
+export interface ConversationMessage {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  vocabulary_detected: string[]
+  order_index: number
+  created_at: string
+}
+
+export interface VocabularyUsageDetail {
+  word: string
+  used: boolean
+  quality?: number
+  context?: string
+}
+
+export interface ConversationEvaluation {
+  vocabulary_used: string[]
+  vocabulary_missed: string[]
+  usage_quality: Record<string, number>
+  overall_fluency: number
+  feedback: string
+  vocabulary_details?: VocabularyUsageDetail[]
+}
+
+export interface ConversationStartRequest {
+  topic?: string
+  use_vocabulary?: boolean
+  target_words?: string[]
+}
+
+export interface ConversationStartResponse {
+  session_id: string
+  topic: string
+  initial_message: string
+  target_vocabulary: string[]
+}
+
+export interface ConversationMessageResponse {
+  message_id: string
+  response: string
+  vocabulary_detected: string[]
+  vocabulary_used: string[]
+}
+
+export interface ConversationEndResponse {
+  session_id: string
+  status: string
+  xp_earned: number
+  evaluation: ConversationEvaluation
+}
+
+export interface ConversationSession {
+  id: string
+  user_id?: string
+  topic?: string
+  target_vocabulary: string[]
+  vocabulary_used: string[]
+  vocabulary_usage_count: number
+  status: 'active' | 'ended'
+  message_count: number
+  evaluation?: ConversationEvaluation
+  started_at: string
+  ended_at?: string
+  messages?: ConversationMessage[]
+}
+
+export interface ConversationListResponse {
+  items: ConversationSession[]
+  total: number
+  page: number
+  per_page: number
+  pages: number
+}
+
+
