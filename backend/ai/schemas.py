@@ -124,3 +124,17 @@ class ConversationEvaluationAI(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class KnowledgeExplanationAI(BaseModel):
+    """Structured AI output for RAG knowledge and grammar explanations."""
+    summary: str = Field(..., description="Direct, concise answer to the learner's query or grammar question")
+    detailed_explanation: str = Field(..., description="In-depth breakdown of the underlying rule or nuance")
+    rule_applied: str = Field(..., description="Name or summary of the specific grammar/usage rule applied")
+    correct_usage: List[str] = Field(default_factory=list, description="List of natural, correct English examples")
+    incorrect_usage: List[str] = Field(default_factory=list, description="Common learner mistakes or pitfalls to avoid")
+    learning_tip: str = Field(..., description="Actionable memory hook or rule of thumb for learner retention")
+    groundedness_confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score that explanation matches retrieved knowledge (0.0 to 1.0)")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+

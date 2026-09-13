@@ -347,5 +347,64 @@ export interface PersonalizedScenario {
   difficulty_score: number
 }
 
+// Phase 8: RAG Knowledge System Types
+export type KnowledgeCategory = 'grammar' | 'common_mistakes' | 'collocations' | 'learning_tips' | 'all'
+
+export interface KnowledgeDocument {
+  id: string
+  title: string
+  category: string
+  topic: string
+  content: string
+  summary: string
+  tags: string[]
+  rules: string[]
+  correct_examples: string[]
+  common_mistakes: string[]
+  source: string
+}
+
+export interface KnowledgeSourceItem {
+  id: string
+  title: string
+  category: string
+  topic: string
+  relevance_score: number
+  summary: string
+  source: string
+}
+
+export interface KnowledgeExplanationResponse {
+  query: string
+  category?: string
+  target_word?: string
+  summary: string
+  detailed_explanation: string
+  rule_applied: string
+  correct_usage: string[]
+  incorrect_usage: string[]
+  learning_tip: string
+  groundedness_confidence: number
+  sources: KnowledgeSourceItem[]
+}
+
+export interface KnowledgeQueryRequest {
+  query: string
+  category?: string
+  target_word?: string
+  top_k?: number
+}
+
+export interface KnowledgeCategoryResponse {
+  categories: Record<string, string[]>
+  total_documents: number
+}
+
+export interface KnowledgeDocumentListResponse {
+  items: KnowledgeDocument[]
+  total: number
+}
+
+
 
 

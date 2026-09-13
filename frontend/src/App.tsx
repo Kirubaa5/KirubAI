@@ -10,10 +10,11 @@ import { PracticePage } from '@/pages/PracticePage'
 import { ReviewsPage } from '@/pages/ReviewsPage'
 import { ConversationsPage } from '@/pages/ConversationsPage'
 import { PersonalizationPage } from '@/pages/PersonalizationPage'
+import { KnowledgePage } from '@/pages/KnowledgePage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +74,13 @@ function Navigation() {
                   >
                     <Sparkles className="h-4 w-4 mr-1 text-amber-500" />
                     Personalized Plan
+                  </Link>
+                  <Link
+                    to="/knowledge"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Compass className="h-4 w-4 mr-1 text-teal-600" />
+                    Knowledge Base
                   </Link>
                   <Link
                     to="/dashboard"
@@ -194,6 +202,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <PersonalizationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/knowledge"
+              element={
+                <ProtectedRoute>
+                  <KnowledgePage />
                 </ProtectedRoute>
               }
             />

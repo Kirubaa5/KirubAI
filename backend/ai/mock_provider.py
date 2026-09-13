@@ -12,6 +12,7 @@ from ai.schemas import (
     ReviewEvaluationAI,
     VocabularyUsageDetailAI,
     ConversationEvaluationAI,
+    KnowledgeExplanationAI,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -275,6 +276,111 @@ class MockLLMProvider(LLMProvider):
                 overall_fluency=overall_fluency,
                 feedback=feedback,
             )
+
+        if issubclass(response_schema, KnowledgeExplanationAI):
+            q_match = re.search(r'Learner\'s Question / Query:\s*\n?["\']?(.*?)["\']?\s*(?:\n|Target Word|Category Focus|TRUSTED KNOWLEDGE|$)', prompt)
+            query_target = q_match.group(1).lower() if q_match else prompt.lower()
+
+            if "discuss" in query_target or "discuss about" in query_target:
+                return KnowledgeExplanationAI(
+                    summary="'Discuss' is a transitive verb that directly takes an object without the preposition 'about'.",
+                    detailed_explanation="'Discuss' already means 'to talk about'. Adding 'about' after 'discuss' is redundant. While 'talk about' or 'have a discussion about' take 'about', the verb 'discuss' takes a direct object.",
+                    rule_applied="Transitive Verb Direct Object Rule",
+                    correct_usage=[
+                        "Let's discuss the project milestones tomorrow.",
+                        "We need to discuss our marketing strategy.",
+                        "They had a long discussion about the budget.",
+                    ],
+                    incorrect_usage=[
+                        "'Let's discuss about the problem' (Incorrect: redundant preposition 'about')",
+                    ],
+                    learning_tip="Remember: 'Discuss = Talk about'. If you wouldn't say 'talk about about', don't say 'discuss about'!",
+                    groundedness_confidence=0.98,
+                )
+            elif "look forward to" in query_target:
+                return KnowledgeExplanationAI(
+                    summary="'Look forward to' is a phrasal verb where 'to' acts as a preposition, requiring a noun phrase or a gerund (-ing form), not a bare infinitive.",
+                    detailed_explanation="In English, when 'to' is a preposition (as in 'look forward to', 'used to', 'object to'), the subsequent verb must be in the gerund form (-ing). Using the base form of the verb after 'look forward to' is one of the most frequent errors among English learners.",
+                    rule_applied="Gerund after Prepositional Phrasal Verb",
+                    correct_usage=[
+                        "I look forward to meeting you next week.",
+                        "We look forward to hearing your feedback.",
+                        "She looks forward to starting her new role.",
+                    ],
+                    incorrect_usage=[
+                        "'I look forward to meet you' (Incorrect: base verb used after preposition 'to')",
+                        "'We look forward to hear from you' (Incorrect: must use gerund 'hearing')",
+                    ],
+                    learning_tip="Test it with a noun: if you can say 'I look forward to IT / THIS DAY', you must say 'I look forward to DOING it'!",
+                    groundedness_confidence=0.95,
+                )
+            elif "make" in query_target and "do" in query_target:
+                return KnowledgeExplanationAI(
+                    summary="'Make' is generally used for creating or producing something new, while 'do' is used for actions, obligations, tasks, and repetitive activities.",
+                    detailed_explanation="Collocations with 'make' involve producing tangible or intangible results (make a decision, make a mistake, make progress). Collocations with 'do' relate to work, chores, and general unspecified actions (do homework, do business, do research).",
+                    rule_applied="Make vs. Do Collocation Distinctions",
+                    correct_usage=[
+                        "We need to make a strategic decision before Friday.",
+                        "Our team did extensive research before launching the feature.",
+                        "She made a great suggestion during the meeting.",
+                    ],
+                    incorrect_usage=[
+                        "'Do a decision' (Incorrect: use 'make a decision')",
+                        "'Make homework' (Incorrect: use 'do homework')",
+                    ],
+                    learning_tip="'Make' creates something that didn't exist before; 'do' performs an action or task.",
+                    groundedness_confidence=0.94,
+                )
+            elif "since" in query_target and "for" in query_target:
+                return KnowledgeExplanationAI(
+                    summary="'Since' refers to a specific starting point in time, whereas 'for' refers to the total duration of a time period.",
+                    detailed_explanation="Both 'since' and 'for' are frequently used with Perfect tenses. Use 'since' with a fixed point (since 2020, since yesterday, since 9 AM). Use 'for' with an elapsed duration (for 5 years, for two weeks, for three hours).",
+                    rule_applied="Temporal Prepositions: Fixed Point vs. Duration",
+                    correct_usage=[
+                        "I have lived in London since 2018.",
+                        "She has worked as an engineer for six years.",
+                        "They have been discussing this issue since this morning.",
+                    ],
+                    incorrect_usage=[
+                        "'I have lived here since 5 years' (Incorrect: 5 years is a duration, use 'for')",
+                        "'I have been waiting for 9 AM' (Incorrect: 9 AM is a starting point, use 'since')",
+                    ],
+                    learning_tip="'Since' = Starting point (dots on a timeline); 'For' = For duration (measuring tape).",
+                    groundedness_confidence=0.96,
+                )
+            elif "affect" in query_target and "effect" in query_target:
+                return KnowledgeExplanationAI(
+                    summary="'Affect' is almost always a verb meaning to influence or produce a change, while 'effect' is almost always a noun meaning the result or consequence.",
+                    detailed_explanation="An easy way to distinguish them: Action = Affect (verb). End result = Effect (noun). When something affects you, it produces an effect on your life.",
+                    rule_applied="Affect (Verb) vs. Effect (Noun) Distinction",
+                    correct_usage=[
+                        "The economic policy will affect interest rates significantly.",
+                        "The positive effects of regular study become apparent over time.",
+                        "His feedback greatly affected our project direction.",
+                    ],
+                    incorrect_usage=[
+                        "'This change will effect our timeline' (Incorrect: 'affect' is needed as the verb)",
+                        "'The medicine had a strange affect' (Incorrect: 'effect' is needed as the noun)",
+                    ],
+                    learning_tip="Use the acronym RAVEN: Remember Affect is a Verb, Effect is a Noun!",
+                    groundedness_confidence=0.97,
+                )
+            else:
+                # Generic robust structured explanation for any other query
+                return KnowledgeExplanationAI(
+                    summary=f"Analysis of English usage and grammatical structure regarding the provided query.",
+                    detailed_explanation="English grammatical rules dictate standard structure, subject-verb agreement, and natural prepositional pairing. Following standard collocations and syntax improves clarity and native-like flow in communication.",
+                    rule_applied="Standard English Syntax & Collocation Rules",
+                    correct_usage=[
+                        "She communicated her ideas clearly during the presentation.",
+                        "They made significant progress on their language goals.",
+                    ],
+                    incorrect_usage=[
+                        "Avoid mixing up direct transitive verbs with redundant prepositions.",
+                    ],
+                    learning_tip="Look for fixed collocations and practice using the full phrase in complete sentences.",
+                    groundedness_confidence=0.88,
+                )
 
         raise ValueError(f"Unsupported mock schema: {response_schema}")
 
