@@ -405,6 +405,124 @@ export interface KnowledgeDocumentListResponse {
   total: number
 }
 
+// Phase 9: Progress & Analytics Dashboard Types
+export interface WordOfTheDay {
+  word: string
+  meaning: string
+  cefr_level?: string
+  part_of_speech?: string
+  example_sentence?: string
+}
 
+export interface DashboardToday {
+  reviews_due: number
+  words_to_practice: number
+  daily_goal_progress: number
+  daily_goal_target: number
+  word_of_the_day?: WordOfTheDay
+}
 
+export interface DashboardStats {
+  total_words: number
+  mastered_words: number
+  active_words: number
+  struggling_words: number
+  current_streak: number
+  total_xp: number
+  level: number
+}
 
+export interface DashboardRecentActivityItem {
+  type: 'practice' | 'review' | 'conversation' | 'vocabulary' | string
+  word?: string
+  score?: number
+  result?: string
+  at: string
+  detail?: string
+}
+
+export interface DashboardSummary {
+  today: DashboardToday
+  stats: DashboardStats
+  recent_activity: DashboardRecentActivityItem[]
+}
+
+export interface VocabularyBreakdownItem {
+  status: string
+  count: number
+  percentage: number
+}
+
+export interface MasteryBracketItem {
+  bracket: string
+  count: number
+  percentage: number
+}
+
+export interface VocabularyBreakdown {
+  total_words: number
+  by_status: VocabularyBreakdownItem[]
+  by_mastery_bracket: MasteryBracketItem[]
+  by_cefr_level: Record<string, number>
+}
+
+export interface DailyProgressItem {
+  date: string
+  day_name: string
+  practices_count: number
+  reviews_count: number
+  conversations_count: number
+  words_added: number
+  words_mastered: number
+  accuracy_rate: number
+  xp_earned: number
+}
+
+export interface WeeklyProgress {
+  daily_progress: DailyProgressItem[]
+  total_practices: number
+  total_reviews: number
+  total_conversations: number
+  total_words_added: number
+  total_xp_earned: number
+  average_accuracy_rate: number
+  active_days: number
+}
+
+export interface MonthlyTrendItem {
+  date: string
+  day_or_week: string
+  activities_count: number
+  words_acquired: number
+  accuracy_rate: number
+  xp_earned: number
+}
+
+export interface MonthlyProgress {
+  trends: MonthlyTrendItem[]
+  total_activities: number
+  words_learned: number
+  average_accuracy_rate: number
+  active_days: number
+  retention_rate: number
+}
+
+export interface ProgressOverview {
+  total_vocabulary: number
+  active_vocabulary: number
+  mastered_count: number
+  struggling_count: number
+  average_mastery: number
+  total_practice_attempts: number
+  practice_accuracy: number
+  average_practice_score: number
+  total_reviews_completed: number
+  recall_accuracy_rate: number
+  total_conversations: number
+  vocabulary_used_in_conversations: number
+  current_streak: number
+  longest_streak: number
+  total_xp: number
+  level: number
+  daily_goal: number
+}

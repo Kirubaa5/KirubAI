@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routers import auth, users, vocabulary, practice, reviews, conversations, personalization, knowledge
+from routers import auth, users, vocabulary, practice, reviews, conversations, personalization, knowledge, dashboard, progress
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -27,6 +27,8 @@ app.include_router(reviews.router, prefix="/api/v1")
 app.include_router(conversations.router, prefix="/api/v1")
 app.include_router(personalization.router, prefix="/api/v1")
 app.include_router(knowledge.router, prefix="/api/v1")
+app.include_router(dashboard.router, prefix="/api/v1")
+app.include_router(progress.router, prefix="/api/v1")
 
 
 @app.get("/health")
