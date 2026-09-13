@@ -47,6 +47,17 @@ class ScenarioAI(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PersonalizedScenarioAI(BaseModel):
+    """Generated personalized practice scenario tailored to domain and learner level."""
+    situation: str = Field(..., description="A vivid, personalized scenario matching the learner's requested domain and difficulty")
+    prompt: str = Field(..., description="Direct instruction prompting the learner to use the target word naturally")
+    context_hint: Optional[str] = Field(None, description="Nuance or stylistic guidance appropriate for this situation")
+    domain: str = Field(..., description="The interest domain of the scenario (e.g., Workplace, Travel, Tech, Daily Life)")
+    cefr_level: str = Field(..., description="Target CEFR level (A1, A2, B1, B2, C1, C2)")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class EvaluationAI(BaseModel):
     """AI evaluation of user's practice attempt."""
     vocabulary_usage_score: float = Field(..., ge=0.0, le=10.0, description="How well the target word was used (0-10)")

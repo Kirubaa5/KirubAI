@@ -269,4 +269,83 @@ export interface ConversationListResponse {
   pages: number
 }
 
+// Phase 7: Personalized Learning Engine Types
+export interface WordSummaryItem {
+  id: string
+  word: string
+  status: VocabularyStatus
+  mastery_score: number
+  practice_count: number
+  successful_usage_count: number
+  failed_recall_count: number
+  next_review_at?: string
+}
+
+export interface MasteryDistribution {
+  new: number
+  learned: number
+  practiced: number
+  recalled: number
+  reinforced: number
+  mastered: number
+  struggling: number
+  total: number
+}
+
+export interface LearningProfile {
+  total_vocabulary: number
+  active_vocabulary: number
+  mastered_count: number
+  struggling_count: number
+  average_mastery: number
+  mastery_distribution: MasteryDistribution
+  weak_words: WordSummaryItem[]
+  strong_words: WordSummaryItem[]
+  total_practice_attempts: number
+  practice_success_rate: number
+  total_reviews_completed: number
+  recall_accuracy_rate: number
+  total_conversations_completed: number
+  adaptive_cefr_level: string
+  adaptive_difficulty_score: number
+  recommended_focus: string
+}
+
+export interface PersonalizedRecommendation {
+  vocabulary_id?: string
+  word: string
+  activity_type: 'review' | 'practice' | 'conversation' | 'learn'
+  priority: 'high' | 'medium' | 'low'
+  reason: string
+  recommended_difficulty: number
+  cefr_level: string
+}
+
+export interface PersonalizedRecommendationsResponse {
+  recommendations: PersonalizedRecommendation[]
+  total_due_reviews: number
+  total_struggling_words: number
+  recommended_daily_focus: string
+  learner_level: string
+}
+
+export interface GeneratePersonalizedScenarioRequest {
+  word: string
+  domain?: string
+  weak_area_context?: string
+  target_cefr_level?: string
+}
+
+export interface PersonalizedScenario {
+  vocabulary_id?: string
+  word: string
+  situation: string
+  prompt: string
+  context_hint?: string
+  domain: string
+  cefr_level: string
+  difficulty_score: number
+}
+
+
 

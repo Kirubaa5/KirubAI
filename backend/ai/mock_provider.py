@@ -7,6 +7,7 @@ from ai.schemas import (
     ConversationalExampleAI,
     ExampleSetAI,
     ScenarioAI,
+    PersonalizedScenarioAI,
     EvaluationAI,
     ReviewEvaluationAI,
     VocabularyUsageDetailAI,
@@ -126,6 +127,33 @@ class MockLLMProvider(LLMProvider):
                 situation="Your manager asks whether you can take on an urgent new feature deadline for next Friday, but you already have a full backlog.",
                 prompt=f"Respond politely and professionally to your manager, naturally expressing your hesitation using the target word '{word}'.",
                 context_hint="Be respectful and explain your workload while offering to discuss priorities.",
+            )
+
+        if issubclass(response_schema, PersonalizedScenarioAI):
+            domain_match = re.search(r'Target Domain(?:/Context)?:\s*([^\n]+)', prompt, re.IGNORECASE)
+            domain = domain_match.group(1).strip() if domain_match else "Workplace"
+            level_match = re.search(r'Learner CEFR Level:\s*([A-Za-z0-9]+)', prompt, re.IGNORECASE)
+            cefr = level_match.group(1).strip().upper() if level_match else "B1"
+
+            if "travel" in domain.lower():
+                situation = f"You are checking into an international hotel and want to inquire politely about room upgrades or itinerary adjustments using the word '{word}'."
+                prompt_text = f"Speak with the hotel concierge and naturally incorporate '{word}' in your request."
+                hint = "Use a friendly and courteous tone suitable for travel."
+            elif "tech" in domain.lower() or "ai" in domain.lower() or "software" in domain.lower():
+                situation = f"During a sprint planning meeting, your engineering team is discussing architectural trade-offs where you want to highlight '{word}'."
+                prompt_text = f"Explain your technical perspective to the team lead while using '{word}' naturally."
+                hint = "Keep your communication clear, structured, and collaborative."
+            else:
+                situation = f"You are collaborating with colleagues on a project deadline and need to convey your thoughts clearly using '{word}'."
+                prompt_text = f"Share your update with your team and naturally integrate '{word}'."
+                hint = "Maintain a professional, constructive tone."
+
+            return PersonalizedScenarioAI(
+                situation=situation,
+                prompt=prompt_text,
+                context_hint=hint,
+                domain=domain,
+                cefr_level=cefr,
             )
 
         if issubclass(response_schema, EvaluationAI):
