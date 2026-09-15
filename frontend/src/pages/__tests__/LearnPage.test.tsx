@@ -266,4 +266,66 @@ describe('LearnPage', () => {
     expect(container.textContent).not.toContain('svgCommon Collocations')
     expect(container.textContent).not.toContain('svg10 Real-Life Conversational Examples')
   })
+
+  it('renders rich semantic content for resilient and does not render generic fallback phrases', async () => {
+    const resilientMock: Vocabulary = {
+      id: 'vocab-resilient',
+      word: 'resilient',
+      status: 'learned',
+      mastery_score: 0.8,
+      practice_count: 5,
+      successful_usage_count: 4,
+      failed_recall_count: 1,
+      review_interval_days: 3,
+      created_at: '2026-03-01T00:00:00Z',
+      details: {
+        simple_meaning: 'Able to withstand or recover quickly from difficult conditions or setbacks.',
+        contextual_meaning: 'Used to describe individuals, systems, or organizations that adapt positively to challenges.',
+        part_of_speech: 'adjective',
+        pronunciation_text: 'ri-ZIL-yunt',
+        cefr_level: 'B2',
+        difficulty_score: 6.0,
+        synonyms: ['tough', 'durable', 'hardy', 'adaptable', 'tenacious'],
+        antonyms: ['fragile', 'vulnerable', 'weak'],
+        word_forms: {
+          adjective: 'resilient',
+          noun: 'resilience',
+          adverb: 'resiliently',
+        },
+        collocations: [
+          'remain resilient',
+          'resilient economy',
+          'highly resilient',
+          'build resilience',
+        ],
+      },
+      examples: [
+        {
+          id: 'ex-r-1',
+          context_label: 'Workplace',
+          example_text: 'Our engineering infrastructure proved remarkably resilient during the traffic surge.',
+          order_index: 0,
+        },
+      ],
+    }
+
+    vi.mocked(vocabularyApi.getLearningContent).mockResolvedValueOnce(resilientMock)
+
+    const { container } = renderLearnPage('vocab-resilient')
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /resilient/i })).toBeInTheDocument()
+    })
+
+    expect(screen.getByText(/able to withstand or recover quickly/i)).toBeInTheDocument()
+    expect(screen.getByText('/ri-ZIL-yunt/')).toBeInTheDocument()
+    expect(screen.getByText('resilience')).toBeInTheDocument()
+    expect(screen.getByText('remain resilient')).toBeInTheDocument()
+
+    // Assert that container does not have generic fallback phrases
+    expect(container.textContent).not.toContain('The general meaning, usage, and definition')
+    expect(container.textContent).not.toContain('term related to resilient')
+    expect(container.textContent).not.toContain("use 'resilient' in context")
+    expect(container.textContent).not.toContain('svgSimple Definition')
+  })
 })

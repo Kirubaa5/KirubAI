@@ -86,8 +86,8 @@ export function LearnPage() {
             to="/vocabulary"
             className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 mb-6"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Vocabulary
+            <ArrowLeft className="h-4 w-4 mr-1" aria-hidden="true" />
+            <span>Back to Vocabulary</span>
           </Link>
           <ErrorState
             title="Failed to load learning content"
@@ -114,8 +114,8 @@ export function LearnPage() {
             to="/vocabulary"
             className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-            Back to Vocabulary
+            <ArrowLeft className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            <span>Back to Vocabulary</span>
           </Link>
 
           <div className="flex items-center gap-3">
@@ -126,8 +126,8 @@ export function LearnPage() {
             </span>
             {isLearnedOrBeyond && (
               <span className="inline-flex items-center text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                Learned
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                <span>Learned</span>
               </span>
             )}
           </div>
@@ -184,7 +184,7 @@ export function LearnPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-blue-50/60 rounded-xl p-5 border border-blue-100">
                 <div className="flex items-center gap-2 text-blue-800 font-semibold text-sm mb-2">
-                  <BookOpen className="h-4 w-4 text-blue-600" />
+                  <BookOpen className="h-4 w-4 text-blue-600" aria-hidden="true" />
                   <span>Simple Definition</span>
                 </div>
                 <p className="text-gray-800 text-base leading-relaxed">
@@ -195,7 +195,7 @@ export function LearnPage() {
               {details?.contextual_meaning && (
                 <div className="bg-amber-50/60 rounded-xl p-5 border border-amber-100">
                   <div className="flex items-center gap-2 text-amber-900 font-semibold text-sm mb-2">
-                    <Sparkles className="h-4 w-4 text-amber-600" />
+                    <Sparkles className="h-4 w-4 text-amber-600" aria-hidden="true" />
                     <span>How & When to Use It</span>
                   </div>
                   <p className="text-gray-800 text-sm leading-relaxed">
@@ -214,7 +214,7 @@ export function LearnPage() {
             <Card className="border-gray-200 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-indigo-600" />
+                  <Layers className="h-4 w-4 text-indigo-600" aria-hidden="true" />
                   <span>Word Forms</span>
                 </CardTitle>
               </CardHeader>
@@ -241,7 +241,7 @@ export function LearnPage() {
             <Card className="border-gray-200 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  <TrendingUp className="h-4 w-4 text-emerald-600" aria-hidden="true" />
                   <span>Synonyms & Antonyms</span>
                 </CardTitle>
               </CardHeader>
@@ -292,7 +292,7 @@ export function LearnPage() {
             <Card className="border-gray-200 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                  <MessageSquare className="h-4 w-4 text-blue-600" aria-hidden="true" />
                   <span>Common Collocations</span>
                 </CardTitle>
               </CardHeader>
@@ -319,7 +319,7 @@ export function LearnPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-blue-600" />
+                <MessageSquare className="h-5 w-5 text-blue-600" aria-hidden="true" />
                 <span>10 Real-Life Conversational Examples</span>
               </h2>
               <p className="text-xs text-gray-500 mt-1">
@@ -361,7 +361,7 @@ export function LearnPage() {
           <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                <Award className="h-5 w-5 text-blue-600" />
+                <Award className="h-5 w-5 text-blue-600" aria-hidden="true" />
                 <span>
                   {vocab.status === 'new'
                     ? 'Ready to move this word into your active vocabulary?'
@@ -382,8 +382,8 @@ export function LearnPage() {
                   disabled={markLearnedMutation.isPending}
                   className="w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 className="h-4 w-4" />
-                  {markLearnedMutation.isPending ? 'Saving...' : 'Mark as Understood (+10 XP)'}
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                  <span>{markLearnedMutation.isPending ? 'Saving...' : 'Mark as Understood (+10 XP)'}</span>
                 </Button>
               ) : null}
               <Link to={`/practice/${vocab.id}`} className="w-full sm:w-auto">
@@ -391,8 +391,8 @@ export function LearnPage() {
                   variant={vocab.status === 'new' ? 'outline' : 'primary'}
                   className="w-full sm:w-auto flex items-center justify-center gap-1.5"
                 >
-                  <Play className="h-4 w-4" />
-                  Practice Scenarios
+                  <Play className="h-4 w-4" aria-hidden="true" />
+                  <span>Practice Scenarios</span>
                 </Button>
               </Link>
               <Button
