@@ -1,4 +1,5 @@
 from typing import List
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from models.vocabulary import Vocabulary, WordDetails, VocabularyExample
@@ -74,13 +75,15 @@ def is_examples_stale(word: str, examples: List[VocabularyExample] | None) -> bo
 
     clean = word.strip().lower()
 
-    # 1. If in curated mock dictionary, check if examples match curated list
+    # 1. If in curated mock dictionary, check if all examples match curated list
     if clean in MOCK_VOCABULARY_DB and "examples" in MOCK_VOCABULARY_DB[clean]:
         curated_exs = MOCK_VOCABULARY_DB[clean]["examples"]
         if len(examples) != len(curated_exs):
             return True
-        if len(examples) > 0 and examples[0].example_text != curated_exs[0][1]:
-            return True
+        curated_texts = {text for _, text in curated_exs}
+        for ex in examples:
+            if not ex.example_text or ex.example_text not in curated_texts:
+                return True
 
     # 2. Check for legacy boilerplate example phrases
     legacy_markers = [
@@ -96,6 +99,8 @@ def is_examples_stale(word: str, examples: List[VocabularyExample] | None) -> bo
         "into daily conversations helps build confidence in english",
     ]
     for ex in examples:
+        if not ex.example_text:
+            return True
         text_lower = ex.example_text.lower()
         if any(marker in text_lower for marker in legacy_markers):
             return True
@@ -112,8 +117,9 @@ class LearningService:
         llm: LLMProvider | None = None,
     ) -> Vocabulary:
         """Fetch cached word details & examples or generate/upgrade them via AI Provider."""
+        clean_target = vocab_id.strip().lower()
         vocab = db.query(Vocabulary).filter(
-            Vocabulary.id == vocab_id,
+            or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
             Vocabulary.user_id == user.id,
         ).first()
 
@@ -124,6 +130,7 @@ class LearningService:
             )
 
         provider = llm or get_llm_provider()
+        needs_commit = False
 
         # Generate or upgrade WordDetails if not cached or if stale
         if is_details_stale(vocab.word, vocab.details):
@@ -160,7 +167,7 @@ class LearningService:
                     difficulty_score=explanation_data.difficulty_score,
                 )
                 db.add(details)
-            db.commit()
+            needs_commit = True
 
         # Generate or upgrade Examples if not cached or if stale
         if is_examples_stale(vocab.word, vocab.examples):
@@ -171,30 +178,30 @@ class LearningService:
                 temperature=0.7,
             )
 
-            # Remove stale examples if any exist
-            if vocab.examples:
-                for old_ex in list(vocab.examples):
-                    db.delete(old_ex)
-                db.flush()
-
-            for idx, ex in enumerate(examples_data.examples):
-                example_obj = VocabularyExample(
+            # Assign directly to the relationship collection for clean cascading replacement
+            vocab.examples = [
+                VocabularyExample(
                     vocabulary_id=vocab.id,
                     example_text=ex.example_text,
                     context_label=ex.context_label,
                     order_index=idx,
                 )
-                db.add(example_obj)
-            db.commit()
+                for idx, ex in enumerate(examples_data.examples)
+            ]
+            needs_commit = True
 
-        db.refresh(vocab)
+        if needs_commit:
+            db.commit()
+            db.refresh(vocab)
+
         return vocab
 
     @staticmethod
     def mark_word_learned(db: Session, user: User, vocab_id: str) -> Vocabulary:
         """Transition vocabulary status from 'new' to 'learned'."""
+        clean_target = vocab_id.strip().lower()
         vocab = db.query(Vocabulary).filter(
-            Vocabulary.id == vocab_id,
+            or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
             Vocabulary.user_id == user.id,
         ).first()
 

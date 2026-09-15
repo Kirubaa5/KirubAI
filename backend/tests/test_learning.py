@@ -282,4 +282,37 @@ async def test_stale_cached_content_is_upgraded_without_losing_user_state(client
     assert "applied to our current workflow" not in data["examples"][0]["example_text"]
 
 
+@pytest.mark.asyncio
+async def test_learn_content_lookup_by_word_and_id_and_repeated_calls(client, auth_headers):
+    """Verify learn endpoint can be accessed by ID and by word, and repeated calls succeed without error."""
+    # 1. Add word
+    res = client.post("/api/v1/vocabulary", headers=auth_headers, json={"word": "resilient"})
+    assert res.status_code == 201
+    vocab_id = res.json()["id"]
+
+    # 2. Access by UUID
+    res_id = client.get(f"/api/v1/vocabulary/{vocab_id}/learn", headers=auth_headers)
+    assert res_id.status_code == 200
+    assert res_id.json()["word"] == "resilient"
+    assert len(res_id.json()["examples"]) == 10
+
+    # 3. Access by word slug
+    res_word = client.get("/api/v1/vocabulary/resilient/learn", headers=auth_headers)
+    assert res_word.status_code == 200
+    assert res_word.json()["id"] == vocab_id
+    assert res_word.json()["details"]["simple_meaning"] == res_id.json()["details"]["simple_meaning"]
+
+    # 4. Mark learned and re-fetch to ensure no regressions
+    mark_res = client.post(f"/api/v1/vocabulary/{vocab_id}/mark-learned", headers=auth_headers)
+    assert mark_res.status_code == 200
+    assert mark_res.json()["status"] == "learned"
+
+    # 5. Subsequent call returns learned status with identical upgraded content
+    subsequent_res = client.get(f"/api/v1/vocabulary/{vocab_id}/learn", headers=auth_headers)
+    assert subsequent_res.status_code == 200
+    assert subsequent_res.json()["status"] == "learned"
+    assert len(subsequent_res.json()["examples"]) == 10
+
+
+
 

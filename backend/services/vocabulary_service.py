@@ -77,9 +77,10 @@ class VocabularyService:
 
     @staticmethod
     def get_word(db: Session, user: User, vocab_id: str) -> Vocabulary:
-        """Get a single vocabulary item by ID."""
+        """Get a single vocabulary item by ID or word."""
+        clean_target = vocab_id.strip().lower()
         vocab = db.query(Vocabulary).filter(
-            Vocabulary.id == vocab_id,
+            or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
             Vocabulary.user_id == user.id
         ).first()
 
