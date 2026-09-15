@@ -185,7 +185,7 @@ export function LearnPage() {
               <div className="bg-blue-50/60 rounded-xl p-5 border border-blue-100">
                 <div className="flex items-center gap-2 text-blue-800 font-semibold text-sm mb-2">
                   <BookOpen className="h-4 w-4 text-blue-600" />
-                  Simple Definition
+                  <span>Simple Definition</span>
                 </div>
                 <p className="text-gray-800 text-base leading-relaxed">
                   {details?.simple_meaning || 'No definition available.'}
@@ -196,7 +196,7 @@ export function LearnPage() {
                 <div className="bg-amber-50/60 rounded-xl p-5 border border-amber-100">
                   <div className="flex items-center gap-2 text-amber-900 font-semibold text-sm mb-2">
                     <Sparkles className="h-4 w-4 text-amber-600" />
-                    How & When to Use It
+                    <span>How & When to Use It</span>
                   </div>
                   <p className="text-gray-800 text-sm leading-relaxed">
                     {details.contextual_meaning}
@@ -215,7 +215,7 @@ export function LearnPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <Layers className="h-4 w-4 text-indigo-600" />
-                  Word Forms
+                  <span>Word Forms</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
@@ -242,7 +242,7 @@ export function LearnPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-emerald-600" />
-                  Synonyms & Antonyms
+                  <span>Synonyms & Antonyms</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
@@ -293,7 +293,7 @@ export function LearnPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-blue-600" />
-                  Common Collocations
+                  <span>Common Collocations</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm">
@@ -320,7 +320,7 @@ export function LearnPage() {
             <div>
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-blue-600" />
-                10 Real-Life Conversational Examples
+                <span>10 Real-Life Conversational Examples</span>
               </h2>
               <p className="text-xs text-gray-500 mt-1">
                 See how native speakers use <span className="font-semibold">{vocab.word}</span> across
@@ -362,9 +362,11 @@ export function LearnPage() {
             <div>
               <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                 <Award className="h-5 w-5 text-blue-600" />
-                {vocab.status === 'new'
-                  ? 'Ready to move this word into your active vocabulary?'
-                  : 'Great job reviewing this word!'}
+                <span>
+                  {vocab.status === 'new'
+                    ? 'Ready to move this word into your active vocabulary?'
+                    : 'Great job reviewing this word!'}
+                </span>
               </h3>
               <p className="text-xs text-gray-600 mt-1">
                 {vocab.status === 'new'

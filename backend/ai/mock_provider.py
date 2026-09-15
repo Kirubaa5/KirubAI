@@ -18,6 +18,204 @@ from ai.schemas import (
 T = TypeVar("T", bound=BaseModel)
 
 
+# Curated vocabulary database for realistic mock responses
+MOCK_VOCABULARY_DB: Dict[str, Dict] = {
+    "hesitate": {
+        "simple_meaning": "To pause before saying or doing something because you are uncertain or nervous.",
+        "contextual_meaning": "Used when someone shows reluctance or pauses to make a thoughtful choice in professional, academic, or social situations.",
+        "part_of_speech": "verb",
+        "pronunciation_text": "HEZ-ih-tayt",
+        "synonyms": ["pause", "waver", "falter", "dither", "delay"],
+        "antonyms": ["proceed", "decide", "commit", "plunge"],
+        "word_forms": {
+            "verb": "hesitate",
+            "noun": "hesitation",
+            "adjective": "hesitant",
+            "adverb": "hesitantly",
+        },
+        "collocations": [
+            "hesitate to ask",
+            "don't hesitate",
+            "hesitate for a moment",
+            "without hesitation",
+        ],
+        "cefr_level": "B1",
+        "difficulty_score": 4.0,
+        "examples": [
+            ("Workplace", "Please don't hesitate to reach out if you have any questions regarding the project."),
+            ("Friends", "I hesitated for a second before telling my friend the truth about what happened."),
+            ("Meeting", "The team lead hesitated before approving the final budget proposal."),
+            ("Interview", "I hesitated briefly to gather my thoughts before answering the technical question."),
+            ("College", "She hesitated to raise her hand in class even though she knew the correct answer."),
+            ("Family", "My parents didn't hesitate to support my decision to study abroad."),
+            ("Shopping", "I hesitated between the two laptops because both had great reviews."),
+            ("Travel", "We hesitated at the intersection, unsure of which road would lead to the hotel."),
+            ("Phone call", "He hesitated on the phone when I asked if he was free this weekend."),
+            ("Daily life", "When an opportunity presents itself, you shouldn't hesitate to seize it."),
+        ],
+    },
+    "vividly": {
+        "simple_meaning": "In a way that produces very clear, detailed, and powerful images in the mind.",
+        "contextual_meaning": "Used when describing strong memories, dreams, or detailed explanations that make something feel real and present.",
+        "part_of_speech": "adverb",
+        "pronunciation_text": "VIV-id-lee",
+        "synonyms": ["clearly", "distinctly", "graphically", "memorably", "powerfully"],
+        "antonyms": ["vaguely", "faintly", "dimly", "hazily"],
+        "word_forms": {
+            "adverb": "vividly",
+            "adjective": "vivid",
+            "noun": "vividness",
+        },
+        "collocations": [
+            "remember vividly",
+            "describe vividly",
+            "recall vividly",
+            "vividly illustrate",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 5.5,
+        "examples": [
+            ("Workplace", "She vividly presented the quarterly results, highlighting key metrics with clear charts."),
+            ("Friends", "I vividly remember our high school road trip like it was yesterday."),
+            ("Meeting", "The director vividly outlined the future vision for the company over the next five years."),
+            ("Interview", "During the interview, he vividly recounted a challenging project he had successfully delivered."),
+            ("College", "The professor vividly explained the economic theory with real-world analogies."),
+            ("Family", "My grandfather vividly described what life was like in the village decades ago."),
+            ("Shopping", "I can still vividly recall the vibrant colors in the bustling downtown market."),
+            ("Travel", "Looking back, we vividly picture the sunset over the coastline from that cliff."),
+            ("Phone call", "He vividly narrated the unexpected incident that happened on his morning commute."),
+            ("Daily life", "Dreams from last night are still vividly playing in the back of my mind."),
+        ],
+    },
+    "hassle": {
+        "simple_meaning": "A situation that causes minor difficulties, inconvenience, or unnecessary effort.",
+        "contextual_meaning": "Commonly used in casual or workplace contexts to express frustration over tedious procedures or irritating tasks.",
+        "part_of_speech": "noun",
+        "pronunciation_text": "HASS-ul",
+        "synonyms": ["nuisance", "inconvenience", "bother", "trouble", "annoyance"],
+        "antonyms": ["convenience", "ease", "simplicity", "pleasure"],
+        "word_forms": {
+            "noun": "hassle",
+            "verb": "hassle",
+            "adjective": "hassle-free",
+        },
+        "collocations": [
+            "too much hassle",
+            "worth the hassle",
+            "hassle-free experience",
+            "avoid the hassle",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 5.0,
+        "examples": [
+            ("Workplace", "Setting up the legacy software environment turned out to be quite a hassle."),
+            ("Friends", "Finding a restaurant on Friday evening without a reservation was a real hassle."),
+            ("Meeting", "The manager apologized for the administrative hassle caused by the new system update."),
+            ("Interview", "She explained how automated workflows helped eliminate daily operational hassle for her team."),
+            ("College", "Registering for electives during the first week of semester was an enormous hassle."),
+            ("Family", "Moving to a new apartment is always a big hassle, but we finally settled in."),
+            ("Shopping", "Returning the damaged package through the post office was surprisingly hassle-free."),
+            ("Travel", "Going through airport security during peak holiday travel can be a major hassle."),
+            ("Phone call", "I spent twenty minutes on hold with customer service to avoid the hassle of visiting the branch."),
+            ("Daily life", "Cooking elaborate meals every weekday is too much of a hassle after long work hours."),
+        ],
+    },
+    "persevere": {
+        "simple_meaning": "To continue making an effort to do or achieve something despite difficulties, failure, or opposition.",
+        "contextual_meaning": "Used to describe tenacity and continuous determination in the face of hardship or obstacles.",
+        "part_of_speech": "verb",
+        "pronunciation_text": "per-suh-VEER",
+        "synonyms": ["persist", "endure", "carry on", "keep going", "prevail"],
+        "antonyms": ["give up", "quit", "surrender", "abandon"],
+        "word_forms": {
+            "verb": "persevere",
+            "noun": "perseverance",
+            "adjective": "perseverant",
+        },
+        "collocations": [
+            "persevere with a task",
+            "persevere through hardship",
+            "persevere in one's efforts",
+            "courage to persevere",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 6.0,
+        "examples": [
+            ("Workplace", "Despite early project setbacks, the engineering team persevered and met the deadline."),
+            ("Friends", "She encouraged her friend to persevere with the job search despite several rejections."),
+            ("Meeting", "The stakeholders agreed that we must persevere with our long-term strategy."),
+            ("Interview", "He shared a story of how he persevered through complex technical roadblocks."),
+            ("College", "The student persevered through challenging calculus courses to earn her degree."),
+            ("Family", "My parents persevered through difficult financial years to support our education."),
+            ("Shopping", "I persevered until I finally tracked down the rare out-of-print book online."),
+            ("Travel", "We persevered on the steep trail until we reached the breathtaking mountain peak."),
+            ("Phone call", "He called to reassure me that if I persevere, good results will follow."),
+            ("Daily life", "Learning a new language is tough, but you will succeed if you persevere every day."),
+        ],
+    },
+}
+
+
+def _get_dynamic_mock_explanation(word: str) -> WordExplanationAI:
+    """Generate meaningful dynamic mock data for any word not in the curated DB."""
+    clean = word.strip().lower()
+    if clean in MOCK_VOCABULARY_DB:
+        data = MOCK_VOCABULARY_DB[clean]
+        return WordExplanationAI(
+            simple_meaning=data["simple_meaning"],
+            contextual_meaning=data["contextual_meaning"],
+            part_of_speech=data["part_of_speech"],
+            pronunciation_text=data["pronunciation_text"],
+            synonyms=data["synonyms"],
+            antonyms=data["antonyms"],
+            word_forms=data["word_forms"],
+            collocations=data["collocations"],
+            cefr_level=data["cefr_level"],
+            difficulty_score=data["difficulty_score"],
+        )
+
+    # General fallback for any unexpected word (does not copy 'hesitate' attributes)
+    return WordExplanationAI(
+        simple_meaning=f"The general meaning, usage, and definition of the English term '{clean}'.",
+        contextual_meaning=f"Used in everyday or professional communication when expressing concepts related to '{clean}'.",
+        part_of_speech="word",
+        pronunciation_text=f"/{clean}/",
+        synonyms=[f"term related to {clean}", f"concept of {clean}"],
+        antonyms=[],
+        word_forms={"base": clean},
+        collocations=[f"use '{clean}' in context", f"understand '{clean}'"],
+        cefr_level="B1",
+        difficulty_score=5.0,
+    )
+
+
+def _get_dynamic_mock_examples(word: str) -> ExampleSetAI:
+    """Generate 10 distinct conversational examples for a word."""
+    clean = word.strip().lower()
+    if clean in MOCK_VOCABULARY_DB and "examples" in MOCK_VOCABULARY_DB[clean]:
+        examples = [
+            ConversationalExampleAI(context_label=label, example_text=text)
+            for label, text in MOCK_VOCABULARY_DB[clean]["examples"]
+        ]
+        return ExampleSetAI(examples=examples)
+
+    contexts = [
+        ("Workplace", f"During the meeting, the manager mentioned how '{clean}' applied to our current workflow."),
+        ("Friends", f"My friend asked me what I meant when I used the word '{clean}' earlier."),
+        ("Meeting", f"We discussed the importance of understanding '{clean}' in this specific context."),
+        ("Interview", f"The interviewer was impressed when the candidate used '{clean}' accurately."),
+        ("College", f"In our seminar today, the professor highlighted '{clean}' as a key concept."),
+        ("Family", f"We had an interesting family discussion centered around the idea of '{clean}'."),
+        ("Shopping", f"The store associate explained the terms clearly so there was no confusion about '{clean}'."),
+        ("Travel", f"While traveling, we noticed how people in different regions interpret '{clean}'."),
+        ("Phone call", f"On the phone, she made sure to clarify her perspective on '{clean}'."),
+        ("Daily life", f"Incorporating '{clean}' into daily conversations helps build confidence in English."),
+    ]
+    return ExampleSetAI(
+        examples=[ConversationalExampleAI(context_label=ctx, example_text=txt) for ctx, txt in contexts]
+    )
+
+
 class MockLLMProvider(LLMProvider):
     """Deterministic Mock LLM provider for tests and offline development."""
 
@@ -54,80 +252,16 @@ class MockLLMProvider(LLMProvider):
                 word = m.group(1).strip()
 
         if issubclass(response_schema, WordExplanationAI):
-            return WordExplanationAI(
-                simple_meaning="To pause before saying or doing something because you are uncertain or nervous.",
-                contextual_meaning="Used when someone shows reluctance or pauses to make a thoughtful choice in professional, academic, or social situations.",
-                part_of_speech="verb",
-                pronunciation_text="HEZ-ih-tayt",
-                synonyms=["pause", "waver", "falter", "dither"],
-                antonyms=["decide", "commit", "proceed"],
-                word_forms={
-                    "verb": word,
-                    "noun": f"{word}tion",
-                    "adjective": f"{word}nt",
-                    "adverb": f"{word}ntly",
-                },
-                collocations=[
-                    f"{word} to ask",
-                    f"don't {word}",
-                    f"{word} for a moment",
-                    f"without {word}ing",
-                ],
-                cefr_level="B1",
-                difficulty_score=4.0,
-            )
+            return _get_dynamic_mock_explanation(word)
 
         if issubclass(response_schema, ExampleSetAI):
-            return ExampleSetAI(
-                examples=[
-                    ConversationalExampleAI(
-                        context_label="Workplace",
-                        example_text=f"Please don't {word} to reach out if you have any questions regarding the project.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Friends",
-                        example_text=f"I {word}d for a second before telling my friend the truth about what happened.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Meeting",
-                        example_text=f"The team lead {word}d before approving the final budget proposal.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Interview",
-                        example_text=f"I {word}d briefly to gather my thoughts before answering the technical question.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="College",
-                        example_text=f"She {word}d to raise her hand in class even though she knew the correct answer.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Family",
-                        example_text=f"My parents didn't {word} to support my decision to study abroad.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Shopping",
-                        example_text=f"I {word}d between the two laptops because both had great reviews.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Travel",
-                        example_text=f"We {word}d at the intersection, unsure of which road would lead to the hotel.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Phone call",
-                        example_text=f"He {word}d on the phone when I asked if he was free this weekend.",
-                    ),
-                    ConversationalExampleAI(
-                        context_label="Daily life",
-                        example_text=f"When an opportunity presents itself, you shouldn't {word} to seize it.",
-                    ),
-                ]
-            )
+            return _get_dynamic_mock_examples(word)
 
         if issubclass(response_schema, ScenarioAI):
             return ScenarioAI(
-                situation="Your manager asks whether you can take on an urgent new feature deadline for next Friday, but you already have a full backlog.",
-                prompt=f"Respond politely and professionally to your manager, naturally expressing your hesitation using the target word '{word}'.",
-                context_hint="Be respectful and explain your workload while offering to discuss priorities.",
+                situation=f"In a team discussion, you are asked to share your thoughts on the project direction, where using '{word}' is particularly relevant.",
+                prompt=f"Respond politely and professionally to your team, naturally incorporating the target word '{word}'.",
+                context_hint=f"Focus on clear communication and use '{word}' in a natural context.",
             )
 
         if issubclass(response_schema, PersonalizedScenarioAI):
@@ -174,7 +308,7 @@ class MockLLMProvider(LLMProvider):
                     naturalness_score=8.5,
                     overall_score=8.7,
                     feedback=f"Excellent usage of the target word '{word}'! Your sentence is contextually appropriate and natural.",
-                    improved_version="I'd like to help with this task, but I hesitate to commit right now because my current deliverables are already booked.",
+                    improved_version=f"I would like to clarify that when using '{word}', expressing your intent clearly makes the response very compelling.",
                     vocabulary_used_correctly=True,
                 )
             else:
@@ -185,7 +319,7 @@ class MockLLMProvider(LLMProvider):
                     naturalness_score=5.5,
                     overall_score=4.2,
                     feedback=f"Make sure to explicitly use the target word '{word}' or one of its grammatical forms in your response.",
-                    improved_version="I would hesitate to accept this new assignment without adjusting my existing priorities first.",
+                    improved_version=f"To include the target word, you could say: 'We should consider how '{word}' affects our current plan.'",
                     vocabulary_used_correctly=False,
                 )
 
