@@ -115,3 +115,61 @@ async def test_unknown_word_does_not_inherit_hesitate_semantics(client, auth_hea
     assert "pause before saying" not in meaning.lower()
     assert "hesitat" not in str(learn["details"]).lower()
 
+
+@pytest.mark.asyncio
+async def test_fear_receives_natural_and_non_generic_content(client, auth_headers):
+    """Ensure 'fear' receives authentic definitions, synonyms, and natural conversational examples."""
+    res = client.post("/api/v1/vocabulary", headers=auth_headers, json={"word": "fear"})
+    assert res.status_code == 201
+    vocab_id = res.json()["id"]
+
+    learn = client.get(f"/api/v1/vocabulary/{vocab_id}/learn", headers=auth_headers).json()
+    details = learn["details"]
+    examples = learn["examples"]
+
+    # 1. Must not receive template/meta phrases
+    assert "general meaning, usage, and definition" not in details["simple_meaning"].lower()
+    assert "term related to" not in str(details["synonyms"]).lower()
+    assert "concept of fear" not in str(details["synonyms"]).lower()
+
+    # 2. Must receive meaningful emotional definition
+    assert any(w in details["simple_meaning"].lower() for w in ["emotion", "danger", "threat", "harm"])
+    assert "FEER" in details["pronunciation_text"]
+
+    # 3. Must have valid synonyms and antonyms
+    assert any(s in ["dread", "anxiety", "apprehension", "terror", "fright"] for s in details["synonyms"])
+    assert any(a in ["courage", "bravery", "confidence", "fearlessness"] for a in details["antonyms"])
+
+    # 4. Examples must genuinely use 'fear' naturally in varied contexts
+    assert len(examples) == 10
+    for ex in examples:
+        assert "fear" in ex["example_text"].lower()
+        # Ensure examples are not generic meta-sentences
+        assert "used 'fear' accurately" not in ex["example_text"]
+        assert "applied to our current workflow" not in ex["example_text"]
+
+
+@pytest.mark.asyncio
+async def test_unknown_word_safe_structure_and_no_hallucinations(client, auth_headers):
+    """Ensure unknown words return clean, grammatically safe structures without fabricated synonyms."""
+    res = client.post("/api/v1/vocabulary", headers=auth_headers, json={"word": "unprecedentedly"})
+    assert res.status_code == 201
+    vocab_id = res.json()["id"]
+
+    learn = client.get(f"/api/v1/vocabulary/{vocab_id}/learn", headers=auth_headers).json()
+    details = learn["details"]
+
+    # Suffix inference should identify adverb
+    assert details["part_of_speech"] == "adverb"
+
+    # No fabricated phrases
+    assert "term related to" not in str(details["synonyms"])
+    assert "concept of" not in str(details["synonyms"])
+    assert details["synonyms"] == []
+    assert details["antonyms"] == []
+
+    # Safe word forms without fake suffixes like 'unprecedentedlytion'
+    assert "unprecedentedlytion" not in str(details["word_forms"])
+    assert details["word_forms"] == {"base": "unprecedentedly"}
+
+

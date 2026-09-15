@@ -240,4 +240,30 @@ describe('LearnPage', () => {
 
     expect(screen.getByRole('button', { name: /return to vocabulary list/i })).toBeInTheDocument()
   })
+
+  it('renders section headings without svg text contamination', async () => {
+    vi.mocked(vocabularyApi.getLearningContent).mockResolvedValueOnce(mockVocabulary)
+
+    const { container } = renderLearnPage()
+
+    await waitFor(() => {
+      expect(screen.getByText('Simple Definition')).toBeInTheDocument()
+    })
+
+    // Assert that headings exist as clean text nodes
+    expect(screen.getByText('Simple Definition')).toBeInTheDocument()
+    expect(screen.getByText('How & When to Use It')).toBeInTheDocument()
+    expect(screen.getByText('Word Forms')).toBeInTheDocument()
+    expect(screen.getByText('Synonyms & Antonyms')).toBeInTheDocument()
+    expect(screen.getByText('Common Collocations')).toBeInTheDocument()
+    expect(screen.getByText('10 Real-Life Conversational Examples')).toBeInTheDocument()
+
+    // Assert that container does not contain "svgSimple Definition" or similar artifacts
+    expect(container.textContent).not.toContain('svgSimple Definition')
+    expect(container.textContent).not.toContain('svgHow & When to Use It')
+    expect(container.textContent).not.toContain('svgWord Forms')
+    expect(container.textContent).not.toContain('svgSynonyms & Antonyms')
+    expect(container.textContent).not.toContain('svgCommon Collocations')
+    expect(container.textContent).not.toContain('svg10 Real-Life Conversational Examples')
+  })
 })
