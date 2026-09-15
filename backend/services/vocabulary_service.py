@@ -29,7 +29,22 @@ class VocabularyService:
             query = query.filter(Vocabulary.word.ilike(f"%{search.strip()}%"))
 
         # Sorting
-        sort_column = getattr(Vocabulary, sort_by, Vocabulary.created_at)
+        valid_columns = {
+            "id": Vocabulary.id,
+            "word": Vocabulary.word,
+            "status": Vocabulary.status,
+            "mastery_score": Vocabulary.mastery_score,
+            "practice_count": Vocabulary.practice_count,
+            "successful_usage_count": Vocabulary.successful_usage_count,
+            "failed_recall_count": Vocabulary.failed_recall_count,
+            "last_practiced_at": Vocabulary.last_practiced_at,
+            "last_reviewed_at": Vocabulary.last_reviewed_at,
+            "next_review_at": Vocabulary.next_review_at,
+            "review_interval_days": Vocabulary.review_interval_days,
+            "created_at": Vocabulary.created_at,
+            "updated_at": Vocabulary.updated_at,
+        }
+        sort_column = valid_columns.get(sort_by, Vocabulary.created_at)
         if order.lower() == "asc":
             query = query.order_by(asc(sort_column))
         else:

@@ -50,9 +50,16 @@ def test_get_vocabulary_detail(client, auth_headers):
     create_res = client.post("/api/v1/vocabulary", headers=auth_headers, json={"word": "resilient"})
     vocab_id = create_res.json()["id"]
 
+    # Access by ID
     response = client.get(f"/api/v1/vocabulary/{vocab_id}", headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["word"] == "resilient"
+
+    # Access by word slug
+    response_slug = client.get("/api/v1/vocabulary/resilient", headers=auth_headers)
+    assert response_slug.status_code == 200
+    assert response_slug.json()["id"] == vocab_id
+    assert response_slug.json()["word"] == "resilient"
 
 
 def test_delete_vocabulary(client, auth_headers):
@@ -64,3 +71,43 @@ def test_delete_vocabulary(client, auth_headers):
 
     get_res = client.get(f"/api/v1/vocabulary/{vocab_id}", headers=auth_headers)
     assert get_res.status_code == 404
+
+
+def test_list_vocabulary_with_null_collection_details(client, auth_headers, test_user, db_session):
+    """Regression test: vocabulary list with partially null word_details serializes cleanly."""
+    from models.vocabulary import Vocabulary, WordDetails
+
+    # Create word directly in DB with null collection fields on WordDetails
+    vocab = Vocabulary(
+        user_id=test_user.id,
+        word="ubiquitous",
+        status="new",
+        mastery_score=0.0,
+    )
+    db_session.add(vocab)
+    db_session.commit()
+    db_session.refresh(vocab)
+
+    details = WordDetails(
+        vocabulary_id=vocab.id,
+        simple_meaning="Present, appearing, or found everywhere.",
+        synonyms=None,
+        antonyms=None,
+        word_forms=None,
+        collocations=None,
+    )
+    db_session.add(details)
+    db_session.commit()
+
+    # List endpoint must succeed and return defaults for null collections
+    res = client.get("/api/v1/vocabulary?search=ubiquitous", headers=auth_headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total"] == 1
+    item = data["items"][0]
+    assert item["word"] == "ubiquitous"
+    assert item["details"]["synonyms"] == []
+    assert item["details"]["antonyms"] == []
+    assert item["details"]["word_forms"] == {}
+    assert item["details"]["collocations"] == []
+
