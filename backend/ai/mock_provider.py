@@ -13,6 +13,9 @@ from ai.schemas import (
     VocabularyUsageDetailAI,
     ConversationEvaluationAI,
     KnowledgeExplanationAI,
+    MultiWordScenarioAI,
+    TargetWordEvaluationAI,
+    MultiWordEvaluationAI,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -816,6 +819,140 @@ class MockLLMProvider(LLMProvider):
                     learning_tip="Look for fixed collocations and practice using the full phrase in complete sentences.",
                     groundedness_confidence=0.88,
                 )
+
+        if issubclass(response_schema, MultiWordScenarioAI):
+            words_list = []
+            tw_raw = re.search(r'target words:?\s*([^\n\.]+)', prompt, re.IGNORECASE)
+            if tw_raw:
+                extracted = re.findall(r'"([a-zA-Z\s\-]+)"', tw_raw.group(1))
+                if extracted:
+                    words_list = list(dict.fromkeys([w.strip() for w in extracted if w.strip()]))
+                else:
+                    words_list = list(dict.fromkeys([w.strip().strip("'\"") for w in tw_raw.group(1).split(",") if w.strip()]))
+
+            if not words_list:
+                tw_match = re.findall(r'"([a-zA-Z\s\-]+)"', prompt)
+                words_list = list(dict.fromkeys([
+                    w.strip() for w in tw_match
+                    if w.strip().lower() not in ("use my vocabulary", "situation", "prompt", "target_words", "context_hint")
+                ]))
+
+            if not words_list:
+                words_list = ["hesitate", "vividly", "hassle"]
+
+            words_str = ", ".join(f"'{w}'" for w in words_list)
+            return MultiWordScenarioAI(
+                situation=f"Your team is coordinating a critical project sprint where timeline constraints and quality benchmarks must be balanced. Several members are debating the best approach.",
+                prompt=f"Write a collaborative message to your team outlining your proposed solution, naturally incorporating all of the target words: {words_str}.",
+                target_words=words_list,
+                context_hint="Maintain a professional and constructive tone, connecting your arguments logically so all words fit naturally into the context.",
+            )
+
+        if issubclass(response_schema, MultiWordEvaluationAI):
+            target_words_list = []
+            tw_raw = re.search(r'targeting:\s*([^\n\.]+)', prompt, re.IGNORECASE)
+            if tw_raw:
+                extracted = re.findall(r'"([a-zA-Z\s\-]+)"', tw_raw.group(1))
+                if extracted:
+                    target_words_list = list(dict.fromkeys([w.strip() for w in extracted if w.strip()]))
+                else:
+                    target_words_list = list(dict.fromkeys([w.strip().strip("'\"") for w in tw_raw.group(1).split(",") if w.strip()]))
+
+            if not target_words_list:
+                tw_match = re.findall(r'"([a-zA-Z\s\-]+)"', prompt)
+                if tw_match:
+                    target_words_list = list(dict.fromkeys([
+                        w.strip()
+                        for w in tw_match
+                        if w.strip().lower() not in (
+                            "use my vocabulary", "situation", "prompt", "target_words",
+                            "context_hint", "word_evaluations", "word", "used", "used_correctly",
+                            "used_naturally", "score", "feedback", "improved_version", "is_successful"
+                        )
+                    ]))
+
+            if not target_words_list:
+                target_words_list = ["hesitate", "vividly", "hassle"]
+
+            # Extract user response
+            user_text = ""
+            resp_m = re.search(r'Learner\'s response:\s*\n?["\']?(.*?)["\']?\s*(?:\nInstructions|Evaluate|$)', prompt, re.DOTALL)
+            if resp_m:
+                user_text = resp_m.group(1).strip()
+
+            word_evals = []
+            user_text_lower = user_text.lower()
+            used_count = 0
+
+            for tw in target_words_list:
+                stem = tw.lower()[:4] if len(tw) >= 4 else tw.lower()
+                is_used = tw.lower() in user_text_lower or stem in user_text_lower
+                if is_used and len(user_text) > 5:
+                    used_count += 1
+                    word_evals.append(
+                        TargetWordEvaluationAI(
+                            word=tw,
+                            used=True,
+                            used_correctly=True,
+                            used_naturally=True,
+                            score=9.0,
+                            feedback=f"Target word '{tw}' was used accurately with natural phrasing.",
+                        )
+                    )
+                else:
+                    word_evals.append(
+                        TargetWordEvaluationAI(
+                            word=tw,
+                            used=False,
+                            used_correctly=False,
+                            used_naturally=False,
+                            score=2.0,
+                            feedback=f"Target word '{tw}' was not detected or needs clearer contextual usage.",
+                        )
+                    )
+
+            total_targets = len(target_words_list)
+            usage_rate = used_count / max(total_targets, 1)
+
+            if used_count == total_targets and len(user_text) > 10:
+                vocab_score = 9.0
+                grammar_score = 8.5
+                context_score = 9.0
+                naturalness_score = 8.5
+                overall_score = 8.8
+                is_successful = True
+                feedback = f"Outstanding work! You successfully incorporated all {total_targets} target words into a cohesive, natural response."
+                improved_version = f"To further refine your message: 'I wouldn't hesitate to proceed with this pragmatic approach; remembering our past challenges vividly helps us avoid unnecessary hassle.'"
+            elif used_count > 0 and len(user_text) > 10:
+                vocab_score = round(min(10.0, max(4.0, usage_rate * 8.0 + 1.0)), 1)
+                grammar_score = 7.5
+                context_score = 8.0
+                naturalness_score = 7.5
+                overall_score = round(vocab_score * 0.35 + grammar_score * 0.20 + context_score * 0.25 + naturalness_score * 0.20, 1)
+                is_successful = overall_score >= 6.0 and used_count >= max(1, total_targets // 2)
+                feedback = f"Good effort! You incorporated {used_count} of {total_targets} target words effectively. Review the missed words to achieve complete synthesis."
+                improved_version = f"A complete synthesis incorporating all target words: 'We should not hesitate to implement this solution, keeping our goals vividly in mind while minimizing team hassle.'"
+            else:
+                vocab_score = 2.5
+                grammar_score = 6.0
+                context_score = 5.0
+                naturalness_score = 5.0
+                overall_score = 4.2
+                is_successful = False
+                feedback = f"Please ensure you explicitly use all target words ({', '.join(target_words_list)}) in your response to demonstrate active mastery."
+                improved_version = f"Example incorporating all target words: 'Don't hesitate to reach out if this process causes any hassle, so we can vividly demonstrate our progress.'"
+
+            return MultiWordEvaluationAI(
+                word_evaluations=word_evals,
+                vocabulary_usage_score=vocab_score,
+                grammar_score=grammar_score,
+                context_score=context_score,
+                naturalness_score=naturalness_score,
+                overall_score=overall_score,
+                feedback=feedback,
+                improved_version=improved_version,
+                is_successful=is_successful,
+            )
 
         raise ValueError(f"Unsupported mock schema: {response_schema}")
 

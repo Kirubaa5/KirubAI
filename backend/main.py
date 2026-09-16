@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routers import auth, users, vocabulary, practice, reviews, conversations, personalization, knowledge, dashboard, progress, gamification
+from routers import auth, users, vocabulary, practice, reviews, conversations, personalization, knowledge, dashboard, progress, gamification, daily
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -30,6 +30,7 @@ app.include_router(knowledge.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
 app.include_router(progress.router, prefix="/api/v1")
 app.include_router(gamification.router, prefix="/api/v1")
+app.include_router(daily.router, prefix="/api/v1")
 
 
 @app.get("/health")

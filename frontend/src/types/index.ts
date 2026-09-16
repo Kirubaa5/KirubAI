@@ -598,3 +598,116 @@ export interface GamificationOverview {
   recent_achievements: Achievement[]
   next_achievements: Achievement[]
 }
+
+// Phase 11: Daily Learning System & "Use My Vocabulary" Types
+export interface DailyTaskItem {
+  id: string
+  priority: number
+  task_type: 'reviews_due' | 'struggling_practice' | 'learn_new' | 'use_my_vocabulary' | string
+  title: string
+  description: string
+  status: 'pending' | 'completed' | 'ready' | 'locked' | string
+  item_count: number
+  action_label: string
+  action_url: string
+  items?: Array<{
+    id: string
+    word: string
+    status?: string
+    mastery_score?: number
+    practice_count?: number
+    review_interval_days?: number
+  }>
+}
+
+export interface DailyPlanResponse {
+  date: string
+  daily_goal_target: number
+  daily_goal_progress: number
+  is_goal_completed: boolean
+  current_streak: number
+  word_of_the_day?: WordOfTheDay
+  tasks: DailyTaskItem[]
+  completed_tasks_count: number
+  total_tasks_count: number
+  completion_percentage: number
+}
+
+export interface MultiWordTargetWord {
+  id: string
+  word: string
+  meaning?: string
+  cefr_level?: string
+  status: VocabularyStatus | string
+}
+
+export interface MultiWordStartRequest {
+  vocabulary_ids?: string[]
+}
+
+export interface MultiWordStartResponse {
+  session_id: string
+  target_words: MultiWordTargetWord[]
+  scenario: Scenario
+  created_at: string
+}
+
+export interface MultiWordSubmitRequest {
+  response: string
+}
+
+export interface WordEvaluationDetail {
+  word: string
+  used: boolean
+  used_correctly: boolean
+  used_naturally: boolean
+  score?: number
+  feedback: string
+}
+
+export interface MultiWordAttemptResponse {
+  id: string
+  session_id: string
+  user_response: string
+  scores: PracticeScores
+  word_evaluations: WordEvaluationDetail[]
+  feedback: string
+  improved_version?: string
+  is_successful: boolean
+  xp_earned: number
+  created_at: string
+}
+
+export interface MultiWordSessionResponse {
+  id: string
+  user_id: string
+  target_words: string[]
+  target_vocabulary_ids: string[]
+  scenario_text: string
+  scenario_prompt: string
+  context_hint?: string
+  status: 'active' | 'completed' | string
+  total_attempts: number
+  successful_attempts: number
+  average_score?: number
+  started_at: string
+  completed_at?: string
+  attempts: MultiWordAttemptResponse[]
+}
+
+export interface MultiWordEligibleResponse {
+  eligible_count: number
+  total_words: number
+  min_required: number
+  is_eligible: boolean
+  items: MultiWordTargetWord[]
+}
+
+export interface MultiWordSessionListResponse {
+  items: MultiWordSessionResponse[]
+  total: number
+  page: number
+  per_page: number
+  pages: number
+}
+

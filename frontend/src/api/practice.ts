@@ -5,6 +5,11 @@ import {
   PracticeSession,
   PracticeSessionListResponse,
   Scenario,
+  MultiWordStartResponse,
+  MultiWordAttemptResponse,
+  MultiWordSessionResponse,
+  MultiWordSessionListResponse,
+  MultiWordEligibleResponse,
 } from '@/types'
 
 export interface ListPracticeParams {
@@ -55,4 +60,37 @@ export const practiceApi = {
     const res = await apiClient.post<PracticeSession>(`/practice/${sessionId}/complete`)
     return res.data
   },
+
+  // Multi-Word Practice ("Use My Vocabulary")
+  getMultiWordEligible: async (): Promise<MultiWordEligibleResponse> => {
+    const res = await apiClient.get<MultiWordEligibleResponse>('/practice/multi-word/eligible')
+    return res.data
+  },
+
+  startMultiWord: async (vocabularyIds?: string[]): Promise<MultiWordStartResponse> => {
+    const res = await apiClient.post<MultiWordStartResponse>('/practice/multi-word', {
+      vocabulary_ids: vocabularyIds && vocabularyIds.length > 0 ? vocabularyIds : undefined,
+    })
+    return res.data
+  },
+
+  submitMultiWord: async (sessionId: string, response: string): Promise<MultiWordAttemptResponse> => {
+    const res = await apiClient.post<MultiWordAttemptResponse>(`/practice/multi-word/${sessionId}/submit`, {
+      response,
+    })
+    return res.data
+  },
+
+  getMultiWordSession: async (sessionId: string): Promise<MultiWordSessionResponse> => {
+    const res = await apiClient.get<MultiWordSessionResponse>(`/practice/multi-word/${sessionId}`)
+    return res.data
+  },
+
+  listMultiWordSessions: async (page = 1, perPage = 20): Promise<MultiWordSessionListResponse> => {
+    const res = await apiClient.get<MultiWordSessionListResponse>('/practice/multi-word/sessions', {
+      params: { page, per_page: perPage },
+    })
+    return res.data
+  },
 }
+

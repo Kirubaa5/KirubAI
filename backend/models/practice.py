@@ -109,3 +109,52 @@ class ConversationMessage(Base):
     # Relationships
     session = relationship("ConversationSession", back_populates="messages")
 
+
+class MultiWordPracticeSession(Base):
+    __tablename__ = "multi_word_practice_sessions"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_words = Column(JSON, default=list, nullable=False)  # List[str] e.g. ["hesitate", "vividly", "hassle"]
+    target_vocabulary_ids = Column(JSON, default=list, nullable=False)  # List[str] UUIDs
+    situation = Column(Text, nullable=False)
+    prompt = Column(Text, nullable=False)
+    context_hint = Column(Text, nullable=True)
+    status = Column(String(20), default="active", nullable=False)  # active, completed
+    total_attempts = Column(Integer, default=0, nullable=False)
+    successful_attempts = Column(Integer, default=0, nullable=False)
+    average_score = Column(Float, nullable=True)
+    started_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    user = relationship("User", back_populates="multi_word_sessions")
+    attempts = relationship(
+        "MultiWordPracticeAttempt",
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="MultiWordPracticeAttempt.created_at",
+    )
+
+
+class MultiWordPracticeAttempt(Base):
+    __tablename__ = "multi_word_practice_attempts"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id = Column(String(36), ForeignKey("multi_word_practice_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_response = Column(Text, nullable=False)
+    vocabulary_usage_score = Column(Float, nullable=False)
+    grammar_score = Column(Float, nullable=False)
+    context_score = Column(Float, nullable=False)
+    naturalness_score = Column(Float, nullable=False)
+    overall_score = Column(Float, nullable=False)
+    word_evaluations = Column(JSON, default=list, nullable=False)  # List[Dict]: word, used, used_correctly, used_naturally, score, feedback
+    feedback = Column(Text, nullable=False)
+    improved_version = Column(Text, nullable=True)
+    is_successful = Column(Boolean, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    session = relationship("MultiWordPracticeSession", back_populates="attempts")
+
+

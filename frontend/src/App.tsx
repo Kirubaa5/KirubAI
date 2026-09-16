@@ -13,9 +13,11 @@ import { PersonalizationPage } from '@/pages/PersonalizationPage'
 import { KnowledgePage } from '@/pages/KnowledgePage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { AchievementsPage } from '@/pages/AchievementsPage'
+import { DailyPlanPage } from '@/pages/DailyPlanPage'
+import { MultiWordPracticePage } from '@/pages/MultiWordPracticePage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy, Calendar, Layers } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +50,20 @@ function Navigation() {
               </Link>
               {isAuthenticated && (
                 <>
+                  <Link
+                    to="/daily"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-blue-700 font-bold border-b-2 border-blue-600"
+                  >
+                    <Calendar className="h-4 w-4 mr-1 text-blue-600" />
+                    Daily Plan
+                  </Link>
+                  <Link
+                    to="/practice/multi-word"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-purple-700 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Layers className="h-4 w-4 mr-1 text-purple-600" />
+                    Use My Vocab
+                  </Link>
                   <Link
                     to="/vocabulary"
                     className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
@@ -158,6 +174,22 @@ export function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route
+              path="/daily"
+              element={
+                <ProtectedRoute>
+                  <DailyPlanPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/practice/multi-word"
+              element={
+                <ProtectedRoute>
+                  <MultiWordPracticePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/vocabulary"
               element={
                 <ProtectedRoute>
@@ -178,6 +210,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <PracticePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/practice"
+              element={
+                <ProtectedRoute>
+                  <VocabularyPage />
                 </ProtectedRoute>
               }
             />

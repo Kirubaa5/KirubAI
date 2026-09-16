@@ -6,6 +6,8 @@ from .practice import (
     ReviewRecord,
     ConversationSession,
     ConversationMessage,
+    MultiWordPracticeSession,
+    MultiWordPracticeAttempt,
 )
 from .achievement import UserAchievement
 
@@ -19,5 +21,7 @@ __all__ = [
     "ReviewRecord",
     "ConversationSession",
     "ConversationMessage",
+    "MultiWordPracticeSession",
+    "MultiWordPracticeAttempt",
     "UserAchievement",
 ]

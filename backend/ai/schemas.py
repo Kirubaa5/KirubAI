@@ -137,4 +137,42 @@ class KnowledgeExplanationAI(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class MultiWordScenarioAI(BaseModel):
+    """Generated multi-word practice scenario for 'Use My Vocabulary'."""
+    situation: str = Field(..., description="A cohesive, realistic scenario where multiple target words can naturally be used together")
+    prompt: str = Field(..., description="Direct instruction prompting the learner to write a response incorporating the target words")
+    target_words: List[str] = Field(..., description="The list of target vocabulary words to use in the response")
+    context_hint: Optional[str] = Field(None, description="Helpful nuance or stylistic tip for connecting the words naturally")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TargetWordEvaluationAI(BaseModel):
+    """Individual per-word evaluation in a multi-word practice response."""
+    word: str = Field(..., description="Target vocabulary word")
+    used: bool = Field(..., description="Whether the word (or an inflected grammatical form) was used in the response")
+    used_correctly: bool = Field(..., description="Whether the word was used with correct meaning and grammatical form")
+    used_naturally: bool = Field(..., description="Whether the word fits naturally and idiomatically into the sentence")
+    score: Optional[float] = Field(None, ge=0.0, le=10.0, description="Usage quality score for this word (0.0 to 10.0)")
+    feedback: str = Field(..., description="Specific feedback on this word's usage and suggestions for improvement")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MultiWordEvaluationAI(BaseModel):
+    """Structured AI output for multi-word practice evaluation."""
+    word_evaluations: List[TargetWordEvaluationAI] = Field(..., description="Detailed individual evaluation for each target word")
+    vocabulary_usage_score: float = Field(..., ge=0.0, le=10.0, description="Overall vocabulary usage score across all target words (0-10)")
+    grammar_score: float = Field(..., ge=0.0, le=10.0, description="Grammar, punctuation, and syntax accuracy score (0-10)")
+    context_score: float = Field(..., ge=0.0, le=10.0, description="Relevance and appropriateness to the given scenario (0-10)")
+    naturalness_score: float = Field(..., ge=0.0, le=10.0, description="Overall naturalness, fluency, and idiomatic flow (0-10)")
+    overall_score: float = Field(..., ge=0.0, le=10.0, description="Weighted aggregate score (0-10)")
+    feedback: str = Field(..., description="Comprehensive constructive feedback covering strengths and areas to refine")
+    improved_version: str = Field(..., description="A polished, native-like alternative response showing natural usage of all target words")
+    is_successful: bool = Field(..., description="Whether the response successfully demonstrated active mastery of the target words")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+
 

@@ -235,9 +235,26 @@ export function DashboardPage() {
               <Calendar className="h-5 w-5 text-blue-600" />
               What should I do today?
             </h2>
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Daily Plan & Actions
-            </span>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/practice/multi-word')}
+                className="gap-1.5 text-purple-700 border-purple-200 hover:bg-purple-50"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Use My Vocabulary</span>
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate('/daily')}
+                className="gap-1.5"
+              >
+                <span>Full Daily Routine</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
