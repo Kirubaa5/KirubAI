@@ -217,6 +217,8 @@ class LearningService:
             vocab.mastery_score = max(vocab.mastery_score, 0.15)
             # Award XP to user for learning a new word (10 XP)
             user.xp += 10
+            from services.gamification_service import GamificationService
+            GamificationService.record_activity(db, user)
             db.commit()
             db.refresh(vocab)
 

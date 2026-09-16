@@ -12,9 +12,10 @@ import { ConversationsPage } from '@/pages/ConversationsPage'
 import { PersonalizationPage } from '@/pages/PersonalizationPage'
 import { KnowledgePage } from '@/pages/KnowledgePage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { AchievementsPage } from '@/pages/AchievementsPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,6 +89,13 @@ function Navigation() {
                   >
                     <LayoutDashboard className="h-4 w-4 mr-1" />
                     Dashboard
+                  </Link>
+                  <Link
+                    to="/achievements"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Trophy className="h-4 w-4 mr-1 text-amber-500" />
+                    Achievements
                   </Link>
                 </>
               )}
@@ -218,6 +226,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/achievements"
+              element={
+                <ProtectedRoute>
+                  <AchievementsPage />
                 </ProtectedRoute>
               }
             />

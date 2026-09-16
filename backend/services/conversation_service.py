@@ -506,7 +506,8 @@ class ConversationService:
         # 2. Award Phase 6 XP (20 XP per completed conversation session)
         xp_earned = 20
         user.xp += xp_earned
-        user.level = max(1, (user.xp // 100) + 1)
+        from services.gamification_service import GamificationService
+        GamificationService.record_activity(db, user)
 
         # 3. Integrate vocabulary usage into Phase 5 spaced repetition & mastery domain logic
         for used_word in final_used:

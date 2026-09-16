@@ -299,10 +299,6 @@ class ReviewService:
         vocab.last_reviewed_at = datetime.now(timezone.utc)
         vocab.next_review_at = next_review_at
 
-        # Update user XP and level
-        user.xp += xp_earned
-        user.level = max(1, (user.xp // 100) + 1)
-
         # Persist review record in database
         review_record = ReviewRecord(
             user_id=user.id,
@@ -319,6 +315,12 @@ class ReviewService:
             reviewed_at=datetime.now(timezone.utc),
         )
         db.add(review_record)
+
+        # Update user XP and level via GamificationService
+        user.xp += xp_earned
+        from services.gamification_service import GamificationService
+        GamificationService.record_activity(db, user)
+
         db.commit()
         db.refresh(vocab)
         db.refresh(user)

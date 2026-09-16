@@ -526,3 +526,75 @@ export interface ProgressOverview {
   level: number
   daily_goal: number
 }
+
+// Phase 10: Gamification & Achievements Types
+export interface LevelInfo {
+  level: number
+  title: string
+  total_xp: number
+  current_level_xp: number
+  next_level_xp: number
+  xp_within_level: number
+  xp_required_for_next_level: number
+  progress_percentage: number
+}
+
+export interface LevelRoadmapItem {
+  level: number
+  title: string
+  xp_required: number
+  is_unlocked: boolean
+  is_current: boolean
+}
+
+export interface LevelRoadmapResponse {
+  current_level: number
+  current_xp: number
+  level_title: string
+  current_level_xp: number
+  next_level_xp: number
+  xp_within_level: number
+  progress_percentage: number
+  levels: LevelRoadmapItem[]
+}
+
+export interface Achievement {
+  key: string
+  title: string
+  description: string
+  category: 'vocabulary' | 'practice' | 'reviews' | 'conversations' | 'streaks' | string
+  icon: string
+  target_threshold: number
+  current_progress: number
+  progress_percentage: number
+  is_unlocked: boolean
+  achieved_at?: string
+}
+
+export interface AchievementListResponse {
+  total: number
+  unlocked_count: number
+  completion_percentage: number
+  items: Achievement[]
+}
+
+export interface GamificationOverview {
+  level: number
+  level_title: string
+  total_xp: number
+  current_level_xp: number
+  next_level_xp: number
+  xp_within_level: number
+  xp_required_for_next_level: number
+  level_progress_percentage: number
+  current_streak: number
+  longest_streak: number
+  daily_goal: number
+  daily_goal_progress: number
+  is_daily_goal_completed: boolean
+  unlocked_achievements_count: number
+  total_achievements_count: number
+  achievement_completion_percentage: number
+  recent_achievements: Achievement[]
+  next_achievements: Achievement[]
+}

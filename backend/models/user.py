@@ -30,3 +30,4 @@ class User(Base):
     practice_sessions = relationship("PracticeSession", back_populates="user", cascade="all, delete-orphan")
     review_records = relationship("ReviewRecord", back_populates="user", cascade="all, delete-orphan")
     conversation_sessions = relationship("ConversationSession", back_populates="user", cascade="all, delete-orphan")
+    achievements = relationship("UserAchievement", back_populates="user", cascade="all, delete-orphan")
