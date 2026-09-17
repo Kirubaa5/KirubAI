@@ -534,6 +534,12 @@ class DailyLearningService:
             for we in eval_ai.word_evaluations
         ]
 
+        # Serialize diagnostic errors to JSON dicts
+        errors_data = [
+            e.model_dump() if hasattr(e, "model_dump") else (e if isinstance(e, dict) else dict(e))
+            for e in (eval_ai.errors or [])
+        ]
+
         attempt = MultiWordPracticeAttempt(
             session_id=session.id,
             user_response=user_response,
@@ -546,6 +552,9 @@ class DailyLearningService:
             feedback=eval_ai.feedback,
             improved_version=eval_ai.improved_version,
             is_successful=is_successful,
+            errors=errors_data,
+            cefr_level=eval_ai.cefr_level or "B1",
+            actionable_tips=eval_ai.actionable_tips or [],
         )
         db.add(attempt)
 

@@ -26,6 +26,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { ErrorState } from '@/components/common/ErrorState'
+import { ErrorBreakdown } from '@/components/practice/ErrorBreakdown'
 
 export const MultiWordPracticePage: React.FC = () => {
   const navigate = useNavigate()
@@ -511,6 +512,16 @@ export const MultiWordPracticePage: React.FC = () => {
                       </p>
                     </div>
                   )}
+
+                  {/* Diagnostic Error Breakdown */}
+                  <div className="pt-2">
+                    <ErrorBreakdown
+                      errors={evaluation.errors}
+                      cefrLevel={evaluation.cefr_level}
+                      actionableTips={evaluation.actionable_tips}
+                      userText={evaluation.user_response}
+                    />
+                  </div>
 
                   {/* Actions */}
                   <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">

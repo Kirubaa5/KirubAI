@@ -14,6 +14,7 @@ from schemas.practice import (
     PracticeSessionListResponse,
     PracticeScoresSchema,
     ScenarioSchema,
+    DiagnosticErrorSchema,
 )
 from schemas.daily import (
     MultiWordStartRequest,
@@ -35,6 +36,10 @@ router = APIRouter(prefix="/practice", tags=["practice"])
 
 
 def format_attempt_response(attempt, target_word: str) -> PracticeAttemptResponse:
+    errors_list = [
+        DiagnosticErrorSchema(**e) if isinstance(e, dict) else e
+        for e in (attempt.errors or [])
+    ]
     return PracticeAttemptResponse(
         id=attempt.id,
         session_id=attempt.session_id,
@@ -52,6 +57,9 @@ def format_attempt_response(attempt, target_word: str) -> PracticeAttemptRespons
         feedback=attempt.feedback,
         improved_version=attempt.improved_version,
         is_successful=attempt.is_successful,
+        errors=errors_list,
+        cefr_level=attempt.cefr_level or "B1",
+        actionable_tips=attempt.actionable_tips or [],
         created_at=attempt.created_at,
     )
 
@@ -79,6 +87,10 @@ def format_session_response(session) -> PracticeSessionResponse:
 
 
 def format_multi_word_attempt_response(attempt, xp_earned: int = 0) -> MultiWordAttemptResponse:
+    errors_list = [
+        DiagnosticErrorSchema(**e) if isinstance(e, dict) else e
+        for e in (attempt.errors or [])
+    ]
     return MultiWordAttemptResponse(
         id=attempt.id,
         session_id=attempt.session_id,
@@ -104,6 +116,9 @@ def format_multi_word_attempt_response(attempt, xp_earned: int = 0) -> MultiWord
         feedback=attempt.feedback,
         improved_version=attempt.improved_version,
         is_successful=attempt.is_successful,
+        errors=errors_list,
+        cefr_level=attempt.cefr_level or "B1",
+        actionable_tips=attempt.actionable_tips or [],
         xp_earned=xp_earned if xp_earned > 0 else (20 if attempt.is_successful else 5),
         created_at=attempt.created_at,
     )
@@ -315,6 +330,9 @@ async def submit_practice_attempt(
         feedback=attempt.feedback,
         improved_version=attempt.improved_version,
         is_successful=attempt.is_successful,
+        errors=formatted_attempt.errors,
+        cefr_level=formatted_attempt.cefr_level,
+        actionable_tips=formatted_attempt.actionable_tips,
         can_continue=True,
         next_scenario=None,
     )

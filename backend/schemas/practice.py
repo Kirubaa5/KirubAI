@@ -40,6 +40,16 @@ class PracticeScoresSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DiagnosticErrorSchema(BaseModel):
+    error_type: str = Field(..., description="Type of error: grammar, collocation, semantic, tone, or spelling")
+    original_text: str = Field(..., description="The exact substring or phrase containing the error")
+    explanation: str = Field(..., description="Linguistic explanation of the issue")
+    suggested_correction: str = Field(..., description="Suggested correction")
+    severity: str = Field(default="medium", description="Severity: low, medium, high")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PracticeAttemptResponse(BaseModel):
     id: str
     session_id: str
@@ -51,6 +61,9 @@ class PracticeAttemptResponse(BaseModel):
     feedback: str
     improved_version: Optional[str] = None
     is_successful: bool
+    errors: List[DiagnosticErrorSchema] = Field(default_factory=list)
+    cefr_level: Optional[str] = "B1"
+    actionable_tips: List[str] = Field(default_factory=list)
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -67,6 +80,9 @@ class PracticeSubmitResponse(BaseModel):
     feedback: str
     improved_version: Optional[str] = None
     is_successful: bool
+    errors: List[DiagnosticErrorSchema] = Field(default_factory=list)
+    cefr_level: Optional[str] = "B1"
+    actionable_tips: List[str] = Field(default_factory=list)
     can_continue: bool = True
     next_scenario: Optional[ScenarioSchema] = None
 

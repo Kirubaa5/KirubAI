@@ -52,6 +52,18 @@ export interface VocabularyListResponse {
   pages: number
 }
 
+// Phase 12: Advanced AI Evaluation & Error Analysis Types
+export type DiagnosticErrorType = 'grammar' | 'collocation' | 'semantic' | 'tone' | 'spelling' | string
+export type DiagnosticSeverity = 'low' | 'medium' | 'high' | string
+
+export interface DiagnosticError {
+  error_type: DiagnosticErrorType
+  original_text: string
+  explanation: string
+  suggested_correction: string
+  severity: DiagnosticSeverity
+}
+
 // Phase 4: Practice Engine Types
 export interface Scenario {
   situation: string
@@ -78,6 +90,9 @@ export interface PracticeAttempt {
   feedback: string
   improved_version?: string
   is_successful: boolean
+  errors?: DiagnosticError[]
+  cefr_level?: string
+  actionable_tips?: string[]
   created_at: string
 }
 
@@ -99,6 +114,9 @@ export interface PracticeSubmitResponse {
   feedback: string
   improved_version?: string
   is_successful: boolean
+  errors?: DiagnosticError[]
+  cefr_level?: string
+  actionable_tips?: string[]
   can_continue: boolean
   next_scenario?: Scenario
 }
@@ -217,6 +235,9 @@ export interface ConversationEvaluation {
   overall_fluency: number
   feedback: string
   vocabulary_details?: VocabularyUsageDetail[]
+  errors?: DiagnosticError[]
+  cefr_level?: string
+  actionable_tips?: string[]
 }
 
 export interface ConversationStartRequest {
@@ -674,6 +695,9 @@ export interface MultiWordAttemptResponse {
   feedback: string
   improved_version?: string
   is_successful: boolean
+  errors?: DiagnosticError[]
+  cefr_level?: string
+  actionable_tips?: string[]
   xp_earned: number
   created_at: string
 }

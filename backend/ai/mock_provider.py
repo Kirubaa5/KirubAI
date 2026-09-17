@@ -16,6 +16,7 @@ from ai.schemas import (
     MultiWordScenarioAI,
     TargetWordEvaluationAI,
     MultiWordEvaluationAI,
+    DiagnosticErrorAI,
 )
 
 T = TypeVar("T", bound=BaseModel)
@@ -493,6 +494,244 @@ def _get_dynamic_mock_explanation(word: str) -> WordExplanationAI:
     )
 
 
+def _analyze_text_diagnostics(text: str) -> List[DiagnosticErrorAI]:
+    """Deterministically extract linguistic diagnostic errors from text across 5 categories: grammar, collocation, semantic, tone, and spelling."""
+    if not text:
+        return []
+
+    errors: List[DiagnosticErrorAI] = []
+    text_clean = text.strip()
+
+    # 1. Collocation Rules
+    if re.search(r'\bdiscuss\s+about\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(discuss\s+about)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "discuss about"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="collocation",
+                original_text=span,
+                explanation="'Discuss' is a transitive verb that directly takes an object without the preposition 'about'.",
+                suggested_correction="discuss",
+                severity="medium",
+            )
+        )
+
+    if re.search(r'\b(?:do|did|doing|does)\s+(?:a\s+)?decision\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b((?:do|did|doing|does)\s+(?:a\s+)?decision)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "do a decision"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="collocation",
+                original_text=span,
+                explanation="Standard English collocation requires the verb 'make' with 'decision' (e.g., 'make a decision').",
+                suggested_correction="make a decision",
+                severity="medium",
+            )
+        )
+
+    if re.search(r'\b(?:make|made|making)\s+homework\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b((?:make|made|making)\s+homework)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "make homework"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="collocation",
+                original_text=span,
+                explanation="Academic tasks and chores pair with 'do', resulting in 'do homework' rather than 'make homework'.",
+                suggested_correction="do homework",
+                severity="medium",
+            )
+        )
+
+    if re.search(r'\b(?:make|made|making)\s+research\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b((?:make|made|making)\s+research)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "make research"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="collocation",
+                original_text=span,
+                explanation="Natural academic collocation prefers 'conduct research' or 'do research' rather than 'make research'.",
+                suggested_correction="conduct research",
+                severity="medium",
+            )
+        )
+
+    if re.search(r'\bpay\s+attention\s+on\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(pay\s+attention\s+on)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "pay attention on"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="collocation",
+                original_text=span,
+                explanation="The fixed prepositional collocation is 'pay attention to', not 'on'.",
+                suggested_correction="pay attention to",
+                severity="medium",
+            )
+        )
+
+    # 2. Grammar Rules
+    if re.search(r'\blook\s+forward\s+to\s+([a-zA-Z]+)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(look\s+forward\s+to\s+([a-zA-Z]+))\b', text_clean, re.IGNORECASE)
+        if m:
+            verb_after = m.group(2).lower()
+            if not verb_after.endswith("ing") and verb_after in ("meet", "hear", "see", "receive", "start", "work", "join", "discuss"):
+                errors.append(
+                    DiagnosticErrorAI(
+                        error_type="grammar",
+                        original_text=m.group(1),
+                        explanation="In 'look forward to', 'to' acts as a preposition requiring a gerund (-ing form), not a base infinitive.",
+                        suggested_correction=f"look forward to {verb_after}ing",
+                        severity="medium",
+                    )
+                )
+
+    if re.search(r'\bsince\s+\d+\s+(?:years?|months?|days?|hours?|weeks?)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(since\s+\d+\s+(?:years?|months?|days?|hours?|weeks?))\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "since 5 years"
+        duration_part = span.split(" ", 1)[1] if " " in span else "5 years"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="grammar",
+                original_text=span,
+                explanation="'Since' designates a specific starting time point; use 'for' to describe a duration of elapsed time.",
+                suggested_correction=f"for {duration_part}",
+                severity="medium",
+            )
+        )
+
+    if re.search(r'\bmore\s+(?:better|easier|faster|harder|bigger|smaller)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(more\s+(?:better|easier|faster|harder|bigger|smaller))\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "more better"
+        adj = span.split()[-1]
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="grammar",
+                original_text=span,
+                explanation="Double comparative: adjectives that already have comparative forms should not be preceded by 'more'.",
+                suggested_correction=adj,
+                severity="low",
+            )
+        )
+
+    if re.search(r'\bto\s+much\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(to\s+much)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "to much"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="grammar",
+                original_text=span,
+                explanation="'Too' with double 'o' is required when indicating an excessive amount or degree.",
+                suggested_correction="too much",
+                severity="low",
+            )
+        )
+
+    # 3. Semantic Rules
+    if re.search(r'\b(?:will\s+effect|can\s+effect|to\s+effect|effect\s+our|effect\s+the|effect\s+this)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(will\s+effect|can\s+effect|to\s+effect|effect\s+our|effect\s+the|effect\s+this)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "effect our"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="semantic",
+                original_text=span,
+                explanation="'Affect' is the verb meaning to influence or produce a change; 'effect' is the noun consequence.",
+                suggested_correction=span.replace("effect", "affect").replace("Effect", "Affect"),
+                severity="high",
+            )
+        )
+
+    if re.search(r'\bloose\s+(?:my|the|our|your|a)\s+(?:job|mind|game|money|chance|opportunity|keys?)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(loose\s+(?:my|the|our|your|a)\s+(?:job|mind|game|money|chance|opportunity|keys?))\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "loose"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="semantic",
+                original_text=span,
+                explanation="'Loose' means not tight or unfastened; 'lose' is the verb meaning to misplace or suffer loss.",
+                suggested_correction=span.replace("loose", "lose").replace("Loose", "Lose"),
+                severity="medium",
+            )
+        )
+
+    # 4. Tone Rules
+    if re.search(r'\b(?:gonna|wanna|kinda|gotta)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(gonna|wanna|kinda|gotta)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "gonna"
+        replacements = {"gonna": "going to", "wanna": "want to", "kinda": "kind of", "gotta": "have to"}
+        correction = replacements.get(span.lower(), "going to")
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="tone",
+                original_text=span,
+                explanation="Informal conversational contraction; using full phrasing creates a more professional and articulate register.",
+                suggested_correction=correction,
+                severity="low",
+            )
+        )
+
+    if re.search(r'\b(?:hey\s+guys|sup|wassup)\b', text_clean, re.IGNORECASE):
+        m = re.search(r'\b(hey\s+guys|sup|wassup)\b', text_clean, re.IGNORECASE)
+        span = m.group(1) if m else "hey guys"
+        errors.append(
+            DiagnosticErrorAI(
+                error_type="tone",
+                original_text=span,
+                explanation="Casual conversational greeting; in professional or workplace scenarios, standard greetings maintain clarity.",
+                suggested_correction="hello team",
+                severity="low",
+            )
+        )
+
+    # 5. Spelling Rules
+    spelling_checks = [
+        ("hestitate", "hesitate", "Misspelled verb: 'hesitate' is spelled with 'si', not 'sti'."),
+        ("vividely", "vividly", "Misspelled adverb: 'vividly' does not have an 'e' before 'ly'."),
+        ("hasle", "hassle", "Misspelled noun: standard spelling is 'hassle' with double 's'."),
+        ("hassell", "hassle", "Misspelled noun: standard spelling is 'hassle' with double 's'."),
+        ("perservere", "persevere", "Misspelled verb: 'persevere' does not contain an 'r' before 'v'."),
+        ("persever", "persevere", "Misspelled verb: 'persevere' ends with 'vere'."),
+        ("meticolous", "meticulous", "Misspelled adjective: standard spelling is 'meticulous'."),
+    ]
+    for misspelled, corrected, expl in spelling_checks:
+        if re.search(r'\b' + re.escape(misspelled) + r'\b', text_clean, re.IGNORECASE):
+            m = re.search(r'\b(' + re.escape(misspelled) + r')\b', text_clean, re.IGNORECASE)
+            span = m.group(1) if m else misspelled
+            errors.append(
+                DiagnosticErrorAI(
+                    error_type="spelling",
+                    original_text=span,
+                    explanation=expl,
+                    suggested_correction=corrected,
+                    severity="low",
+                )
+            )
+
+    return errors
+
+
+def _build_actionable_tips(errors: List[DiagnosticErrorAI]) -> List[str]:
+    """Generate concise, actionable linguistic recommendations based on errors."""
+    if not errors:
+        return [
+            "Incorporate sophisticated discourse markers to create smooth transitions between your thoughts.",
+            "Experiment with nuanced idioms and varied syntactic structures to elevate your natural fluency.",
+        ]
+
+    tips = []
+    types_found = {e.error_type for e in errors}
+    if "collocation" in types_found:
+        tips.append("Pay close attention to verb-noun and prepositional collocations (e.g. 'discuss' takes a direct object without 'about').")
+    if "grammar" in types_found:
+        tips.append("Review phrasal verbs and prepositions that require gerund (-ing) forms.")
+    if "semantic" in types_found:
+        tips.append("Distinguish carefully between sound-alike words with different grammatical categories (e.g. affect vs. effect).")
+    if "tone" in types_found:
+        tips.append("Adjust your vocabulary register to match the professional or academic scenario context.")
+    if "spelling" in types_found:
+        tips.append("Double-check spelling of target root words and morphological suffixes.")
+
+    return tips[:3]
+
+
 def _get_dynamic_mock_examples(word: str) -> ExampleSetAI:
     """Generate 10 distinct conversational examples for a word."""
     clean = word.strip().lower()
@@ -603,17 +842,31 @@ class MockLLMProvider(LLMProvider):
 
             word_root = word.lower()[:4] if len(word) >= 4 else word.lower()
             contains_word = word.lower() in user_text.lower() or word_root in user_text.lower()
+            diag_errors = _analyze_text_diagnostics(user_text)
+            tips = _build_actionable_tips(diag_errors)
 
             if contains_word and len(user_text) > 5:
+                grammar_deduction = sum(1.5 for e in diag_errors if e.error_type in ("grammar", "spelling"))
+                collocation_deduction = sum(1.5 for e in diag_errors if e.error_type in ("collocation", "semantic", "tone"))
+                grammar_score = max(5.0, round(8.5 - grammar_deduction, 1))
+                naturalness_score = max(5.0, round(8.5 - collocation_deduction, 1))
+                vocab_score = 9.0
+                context_score = 9.0
+                overall_score = round(vocab_score * 0.3 + grammar_score * 0.2 + context_score * 0.25 + naturalness_score * 0.25, 1)
+                cefr_level = "B1" if diag_errors else ("C1" if len(user_text) > 80 else "B2")
+
                 return EvaluationAI(
-                    vocabulary_usage_score=9.0,
-                    grammar_score=8.5,
-                    context_score=9.0,
-                    naturalness_score=8.5,
-                    overall_score=8.7,
+                    vocabulary_usage_score=vocab_score,
+                    grammar_score=grammar_score,
+                    context_score=context_score,
+                    naturalness_score=naturalness_score,
+                    overall_score=overall_score,
                     feedback=f"Excellent usage of the target word '{word}'! Your sentence is contextually appropriate and natural.",
                     improved_version=f"I would like to clarify that when using '{word}', expressing your intent clearly makes the response very compelling.",
                     vocabulary_used_correctly=True,
+                    errors=diag_errors,
+                    cefr_level=cefr_level,
+                    actionable_tips=tips,
                 )
             else:
                 return EvaluationAI(
@@ -625,6 +878,9 @@ class MockLLMProvider(LLMProvider):
                     feedback=f"Make sure to explicitly use the target word '{word}' or one of its grammatical forms in your response.",
                     improved_version=f"To include the target word, you could say: 'We should consider how '{word}' affects our current plan.'",
                     vocabulary_used_correctly=False,
+                    errors=diag_errors,
+                    cefr_level="A2",
+                    actionable_tips=tips,
                 )
 
         if issubclass(response_schema, ReviewEvaluationAI):
@@ -706,6 +962,10 @@ class MockLLMProvider(LLMProvider):
                 else "Good conversation! You communicated your ideas clearly. Try incorporating the suggested target words in your next chat to reinforce your vocabulary."
             )
 
+            diag_errors = _analyze_text_diagnostics(transcript)
+            tips = _build_actionable_tips(diag_errors)
+            cefr_level = "B2" if (used_words and not diag_errors) else ("B1" if used_words else "A2")
+
             return ConversationEvaluationAI(
                 vocabulary_details=details,
                 vocabulary_used=used_words,
@@ -713,6 +973,9 @@ class MockLLMProvider(LLMProvider):
                 usage_quality=usage_quality,
                 overall_fluency=overall_fluency,
                 feedback=feedback,
+                errors=diag_errors,
+                cefr_level=cefr_level,
+                actionable_tips=tips,
             )
 
         if issubclass(response_schema, KnowledgeExplanationAI):
@@ -942,6 +1205,10 @@ class MockLLMProvider(LLMProvider):
                 feedback = f"Please ensure you explicitly use all target words ({', '.join(target_words_list)}) in your response to demonstrate active mastery."
                 improved_version = f"Example incorporating all target words: 'Don't hesitate to reach out if this process causes any hassle, so we can vividly demonstrate our progress.'"
 
+            diag_errors = _analyze_text_diagnostics(user_text)
+            tips = _build_actionable_tips(diag_errors)
+            cefr_level = "B2" if (is_successful and not diag_errors) else ("B1" if is_successful else "A2")
+
             return MultiWordEvaluationAI(
                 word_evaluations=word_evals,
                 vocabulary_usage_score=vocab_score,
@@ -952,6 +1219,9 @@ class MockLLMProvider(LLMProvider):
                 feedback=feedback,
                 improved_version=improved_version,
                 is_successful=is_successful,
+                errors=diag_errors,
+                cefr_level=cefr_level,
+                actionable_tips=tips,
             )
 
         raise ValueError(f"Unsupported mock schema: {response_schema}")

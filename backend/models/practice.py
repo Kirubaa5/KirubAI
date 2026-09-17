@@ -41,6 +41,9 @@ class PracticeAttempt(Base):
     feedback = Column(Text, nullable=False)
     improved_version = Column(Text, nullable=True)
     is_successful = Column(Boolean, nullable=False)
+    errors = Column(JSON, default=list, nullable=True)
+    cefr_level = Column(String(10), default="B1", nullable=True)
+    actionable_tips = Column(JSON, default=list, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
@@ -152,6 +155,9 @@ class MultiWordPracticeAttempt(Base):
     feedback = Column(Text, nullable=False)
     improved_version = Column(Text, nullable=True)
     is_successful = Column(Boolean, nullable=False)
+    errors = Column(JSON, default=list, nullable=True)
+    cefr_level = Column(String(10), default="B1", nullable=True)
+    actionable_tips = Column(JSON, default=list, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships

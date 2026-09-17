@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from schemas.dashboard import WordOfTheDay
-from schemas.practice import PracticeScoresSchema, ScenarioSchema
+from schemas.practice import PracticeScoresSchema, ScenarioSchema, DiagnosticErrorSchema
 
 
 class DailyTaskItem(BaseModel):
@@ -90,6 +90,9 @@ class MultiWordAttemptResponse(BaseModel):
     feedback: str
     improved_version: Optional[str] = None
     is_successful: bool
+    errors: List[DiagnosticErrorSchema] = Field(default_factory=list)
+    cefr_level: Optional[str] = "B1"
+    actionable_tips: List[str] = Field(default_factory=list)
     xp_earned: int
     created_at: datetime
 

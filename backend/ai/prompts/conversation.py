@@ -39,8 +39,8 @@ Requirements:
 
 
 CONVERSATION_EVALUATION_SYSTEM_PROMPT = """You are an expert English language evaluator.
-Your role is to assess a completed English conversation between an AI coach and a language learner.
-Evaluate the learner's vocabulary usage, fluency, context appropriateness, and overall communication.
+Your role is to assess a completed English conversation between an AI coach and a language learner with structured diagnostic error analysis.
+Evaluate the learner's vocabulary usage, fluency, context appropriateness, diagnostic errors across grammar, collocation, semantic, tone, and spelling, CEFR level, and actionable feedback.
 Return your evaluation matching the requested JSON schema."""
 
 
@@ -66,4 +66,7 @@ Evaluation Instructions:
 4. Provide a mapping in 'usage_quality' of each used word to its quality score.
 5. Rate the learner's 'overall_fluency' from 0.0 to 10.0 based on grammar, natural phrasing, flow, and communication clarity.
 6. Provide constructive, positive, encouraging 'feedback' (2-4 sentences) highlighting strengths and specific suggestions for improvement.
+7. errors: List diagnostic errors detected in the learner's turns (grammar, collocation, semantic, tone, spelling), with original_text span, explanation, suggested_correction, and severity ("low" | "medium" | "high"). Return [] if no noticeable errors.
+8. cefr_level: Assessed CEFR difficulty level of the learner's conversational English ("A1", "A2", "B1", "B2", "C1", "C2").
+9. actionable_tips: 1-3 concrete actionable tips for conversational improvement.
 """

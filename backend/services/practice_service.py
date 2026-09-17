@@ -186,6 +186,10 @@ class PracticeService:
         )
 
         # Create practice attempt
+        errors_data = [
+            e.model_dump() if hasattr(e, "model_dump") else (e if isinstance(e, dict) else dict(e))
+            for e in (eval_ai.errors or [])
+        ]
         attempt = PracticeAttempt(
             session_id=session.id,
             vocabulary_id=vocab.id,
@@ -199,6 +203,9 @@ class PracticeService:
             feedback=eval_ai.feedback,
             improved_version=eval_ai.improved_version,
             is_successful=successful,
+            errors=errors_data,
+            cefr_level=eval_ai.cefr_level or "B1",
+            actionable_tips=eval_ai.actionable_tips or [],
         )
         db.add(attempt)
 

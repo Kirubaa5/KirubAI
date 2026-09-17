@@ -473,6 +473,12 @@ class ConversationService:
                     "quality": usage_quality.get(tw) if is_used else None,
                     "context": matching_ai_detail.context if matching_ai_detail else None,
                 })
+            errors_data = [
+                e.model_dump() if hasattr(e, "model_dump") else (e if isinstance(e, dict) else dict(e))
+                for e in (eval_ai.errors or [])
+            ]
+            cefr_level = eval_ai.cefr_level or "B1"
+            actionable_tips = eval_ai.actionable_tips or []
         except Exception:
             # Deterministic fallback evaluation
             final_used = [w for w in target_words if w in all_detected_set]
@@ -493,6 +499,11 @@ class ConversationService:
                 }
                 for tw in target_words
             ]
+            errors_data = []
+            cefr_level = "B1"
+            actionable_tips = [
+                "Keep practicing active conversations to build real-time retrieval speed.",
+            ]
 
         eval_dict: Dict[str, Any] = {
             "vocabulary_used": final_used,
@@ -501,6 +512,9 @@ class ConversationService:
             "overall_fluency": overall_fluency,
             "feedback": feedback,
             "vocabulary_details": details,
+            "errors": errors_data,
+            "cefr_level": cefr_level,
+            "actionable_tips": actionable_tips,
         }
 
         # 2. Award Phase 6 XP (20 XP per completed conversation session)

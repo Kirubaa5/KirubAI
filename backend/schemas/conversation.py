@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field, ConfigDict
+from schemas.practice import DiagnosticErrorSchema
 
 
 class ConversationStartRequest(BaseModel):
@@ -58,6 +59,9 @@ class ConversationEvaluationSchema(BaseModel):
     overall_fluency: float
     feedback: str
     vocabulary_details: Optional[List[VocabularyUsageDetailSchema]] = None
+    errors: Optional[List[DiagnosticErrorSchema]] = Field(default_factory=list)
+    cefr_level: Optional[str] = "B1"
+    actionable_tips: Optional[List[str]] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

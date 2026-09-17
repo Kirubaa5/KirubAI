@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { ErrorState } from '@/components/common/ErrorState'
+import { ErrorBreakdown } from '@/components/practice/ErrorBreakdown'
 import {
   MessageSquare,
   Send,
@@ -697,6 +698,15 @@ export function ConversationsPage() {
                       <p className="text-sm text-gray-800 leading-relaxed">
                         {evaluation.feedback}
                       </p>
+                    </div>
+
+                    {/* Diagnostic Error Breakdown */}
+                    <div className="bg-white p-4 rounded-lg border border-gray-200">
+                      <ErrorBreakdown
+                        errors={evaluation.errors}
+                        cefrLevel={evaluation.cefr_level}
+                        actionableTips={evaluation.actionable_tips}
+                      />
                     </div>
 
                     {/* Next Step Action */}

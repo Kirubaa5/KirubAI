@@ -58,6 +58,32 @@ class PersonalizedScenarioAI(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DiagnosticErrorAI(BaseModel):
+    """Structured diagnostic linguistic error identified in learner input."""
+    error_type: str = Field(
+        ...,
+        description="Type of error: grammar, collocation, semantic, tone, or spelling",
+    )
+    original_text: str = Field(
+        ...,
+        description="The exact substring or phrase from the learner's response that contains the error",
+    )
+    explanation: str = Field(
+        ...,
+        description="Clear, constructive explanation of the linguistic rule or nuance",
+    )
+    suggested_correction: str = Field(
+        ...,
+        description="Corrected or improved alternative phrasing for this span",
+    )
+    severity: str = Field(
+        default="medium",
+        description="Severity level: low, medium, or high",
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class EvaluationAI(BaseModel):
     """AI evaluation of user's practice attempt."""
     vocabulary_usage_score: float = Field(..., ge=0.0, le=10.0, description="How well the target word was used (0-10)")
@@ -68,6 +94,18 @@ class EvaluationAI(BaseModel):
     feedback: str = Field(..., description="Constructive, encouraging feedback on strengths and improvement areas")
     improved_version: str = Field(..., description="A more natural, native-like alternative phrasing")
     vocabulary_used_correctly: bool = Field(..., description="Whether the target word was used with correct meaning and form")
+    errors: List[DiagnosticErrorAI] = Field(
+        default_factory=list,
+        description="List of structured diagnostic errors (grammar, collocation, semantic, tone, spelling)",
+    )
+    cefr_level: Optional[str] = Field(
+        default="B1",
+        description="Assessed CEFR diagnostic level of the response (A1, A2, B1, B2, C1, C2)",
+    )
+    actionable_tips: List[str] = Field(
+        default_factory=list,
+        description="Actionable linguistic recommendations and learning tips",
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -120,6 +158,18 @@ class ConversationEvaluationAI(BaseModel):
         ...,
         description="Constructive, encouraging feedback on conversational flow, grammar, and vocabulary usage",
     )
+    errors: List[DiagnosticErrorAI] = Field(
+        default_factory=list,
+        description="List of structured diagnostic errors detected during conversation turns",
+    )
+    cefr_level: Optional[str] = Field(
+        default="B1",
+        description="Assessed CEFR diagnostic level of the learner's conversational output",
+    )
+    actionable_tips: List[str] = Field(
+        default_factory=list,
+        description="Actionable linguistic recommendations for conversational fluency",
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -170,6 +220,18 @@ class MultiWordEvaluationAI(BaseModel):
     feedback: str = Field(..., description="Comprehensive constructive feedback covering strengths and areas to refine")
     improved_version: str = Field(..., description="A polished, native-like alternative response showing natural usage of all target words")
     is_successful: bool = Field(..., description="Whether the response successfully demonstrated active mastery of the target words")
+    errors: List[DiagnosticErrorAI] = Field(
+        default_factory=list,
+        description="List of structured diagnostic errors (grammar, collocation, semantic, tone, spelling)",
+    )
+    cefr_level: Optional[str] = Field(
+        default="B1",
+        description="Assessed CEFR diagnostic level of the response (A1, A2, B1, B2, C1, C2)",
+    )
+    actionable_tips: List[str] = Field(
+        default_factory=list,
+        description="Actionable linguistic recommendations and learning tips",
+    )
 
     model_config = ConfigDict(from_attributes=True)
 

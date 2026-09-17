@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { ErrorState } from '@/components/common/ErrorState'
+import { ErrorBreakdown } from '@/components/practice/ErrorBreakdown'
 import {
   ArrowLeft,
   Sparkles,
@@ -607,6 +608,18 @@ export function PracticePage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Diagnostic Error Breakdown Card */}
+            <Card className="border-gray-200 bg-white shadow-sm">
+              <CardContent className="p-6">
+                <ErrorBreakdown
+                  errors={lastSubmission.errors}
+                  cefrLevel={lastSubmission.cefr_level}
+                  actionableTips={lastSubmission.actionable_tips}
+                  userText={lastSubmission.user_response}
+                />
+              </CardContent>
+            </Card>
 
             {/* Action Bar */}
             <Card className="border-gray-200 bg-white shadow-sm">
