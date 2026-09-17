@@ -15,9 +15,10 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { AchievementsPage } from '@/pages/AchievementsPage'
 import { DailyPlanPage } from '@/pages/DailyPlanPage'
 import { MultiWordPracticePage } from '@/pages/MultiWordPracticePage'
+import { ExportPage } from '@/pages/ExportPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy, Calendar, Layers } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy, Calendar, Layers, Download } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -112,6 +113,13 @@ function Navigation() {
                   >
                     <Trophy className="h-4 w-4 mr-1 text-amber-500" />
                     Achievements
+                  </Link>
+                  <Link
+                    to="/export"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Download className="h-4 w-4 mr-1 text-blue-600" />
+                    Export
                   </Link>
                 </>
               )}
@@ -274,6 +282,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <AchievementsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/export"
+              element={
+                <ProtectedRoute>
+                  <ExportPage />
                 </ProtectedRoute>
               }
             />

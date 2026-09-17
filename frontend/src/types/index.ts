@@ -735,3 +735,28 @@ export interface MultiWordSessionListResponse {
   pages: number
 }
 
+// Phase 13: Export, Data Portability & Study Deck Generator Types
+export type ExportFormat = 'anki' | 'csv' | 'json'
+
+export interface ExportFilterParams {
+  format?: ExportFormat | 'anki_tsv' | 'anki_csv'
+  status?: string
+  cefr_level?: string
+  min_mastery?: number
+  max_mastery?: number
+  date_from?: string
+  date_to?: string
+  sort_by?: string
+  order?: 'asc' | 'desc'
+  include_examples?: boolean
+  include_learning_stats?: boolean
+}
+
+export interface ExportPreviewResponse {
+  total_vocabulary_count: number
+  matching_words_count: number
+  status_distribution: Record<string, number>
+  cefr_distribution: Record<string, number>
+  sample_words: string[]
+}
+

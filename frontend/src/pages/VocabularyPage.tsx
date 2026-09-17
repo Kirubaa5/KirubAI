@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
-import { Plus, Search, Trash2, BookOpen, Play, Brain } from 'lucide-react'
+import { Plus, Search, Trash2, BookOpen, Play, Brain, Download } from 'lucide-react'
 
 const statusColors: Record<VocabularyStatus, { bg: string; text: string; label: string }> = {
   new: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'New' },
@@ -85,6 +85,15 @@ export function VocabularyPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link to="/export">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                <Download className="h-4 w-4 text-blue-600" />
+                <span>Export / Study Deck</span>
+              </Button>
+            </Link>
             {dueData && dueData.due_count > 0 && (
               <Link to="/reviews">
                 <Button

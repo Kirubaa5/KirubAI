@@ -17,6 +17,7 @@ import {
   ChevronRight,
   RefreshCw,
   Compass,
+  Download,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -180,6 +181,15 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/export')}
+              className="flex items-center gap-1.5 border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              <Download className="h-4 w-4 text-blue-600" />
+              <span>Export Decks</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
