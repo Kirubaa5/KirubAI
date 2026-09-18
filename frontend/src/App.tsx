@@ -16,9 +16,10 @@ import { AchievementsPage } from '@/pages/AchievementsPage'
 import { DailyPlanPage } from '@/pages/DailyPlanPage'
 import { MultiWordPracticePage } from '@/pages/MultiWordPracticePage'
 import { ExportPage } from '@/pages/ExportPage'
+import { AdaptiveLearningPage } from '@/pages/AdaptiveLearningPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy, Calendar, Layers, Download } from 'lucide-react'
+import { BookOpen, Home, LayoutDashboard, LogOut, Library, Brain, MessageSquare, Sparkles, Compass, Trophy, Calendar, Layers, Download, Target } from 'lucide-react'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,11 +88,18 @@ function Navigation() {
                     Conversations
                   </Link>
                   <Link
-                    to="/personalization"
+                    to="/adaptive"
                     className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
                   >
                     <Sparkles className="h-4 w-4 mr-1 text-amber-500" />
-                    Personalized Plan
+                    Adaptive Plan
+                  </Link>
+                  <Link
+                    to="/personalization"
+                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 border-b-2 border-transparent hover:border-gray-300"
+                  >
+                    <Target className="h-4 w-4 mr-1 text-blue-500" />
+                    Personalization
                   </Link>
                   <Link
                     to="/knowledge"
@@ -250,6 +258,14 @@ export function App() {
               element={
                 <ProtectedRoute>
                   <ConversationsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/adaptive"
+              element={
+                <ProtectedRoute>
+                  <AdaptiveLearningPage />
                 </ProtectedRoute>
               }
             />

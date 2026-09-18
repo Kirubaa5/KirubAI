@@ -760,3 +760,63 @@ export interface ExportPreviewResponse {
   sample_words: string[]
 }
 
+// Phase 14: Adaptive Learning Engine Types
+export interface DiagnosticErrorSummaryItem {
+  error_type: string
+  count: number
+  description: string
+  sample_phrases: string[]
+}
+
+export interface DiagnosticFocusSummary {
+  primary_weakness?: string | null
+  recommended_strategy: string
+  recent_error_count: number
+  top_error_types: DiagnosticErrorSummaryItem[]
+}
+
+export interface LearnerProfileSummary {
+  cefr_level: string
+  difficulty_score: number
+  average_mastery: number
+  total_vocabulary: number
+  active_vocabulary: number
+  mastered_count: number
+  struggling_count: number
+  recent_accuracy_rate: number
+  practice_success_rate: number
+  recall_accuracy_rate: number
+}
+
+export interface AdaptiveRecommendationItem {
+  id: string
+  activity_type: 'review' | 'practice' | 'multi_word' | 'conversation' | 'learn' | 'error_remediation' | string
+  title: string
+  reason: string
+  learning_objective: string
+  target_words: string[]
+  target_vocabulary_ids: string[]
+  difficulty: number
+  cefr_level: string
+  priority: 'urgent' | 'high' | 'medium' | 'normal' | 'low' | string
+  action_url: string
+  action_label: string
+}
+
+export interface DailyPlanSyncSummary {
+  daily_goal_progress: number
+  daily_goal_target: number
+  is_goal_completed: boolean
+  current_streak: number
+}
+
+export interface AdaptivePlanResponse {
+  generated_at: string
+  learner_profile: LearnerProfileSummary
+  primary_recommendation: AdaptiveRecommendationItem
+  recommendations: AdaptiveRecommendationItem[]
+  diagnostic_focus: DiagnosticFocusSummary
+  daily_plan_sync: DailyPlanSyncSummary
+}
+
+

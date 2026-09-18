@@ -184,6 +184,15 @@ export function DashboardPage() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => navigate('/adaptive')}
+              className="flex items-center gap-1.5 border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100"
+            >
+              <Sparkles className="h-4 w-4 text-amber-600" />
+              <span>Adaptive Plan</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate('/export')}
               className="flex items-center gap-1.5 border-gray-300 text-gray-700 hover:bg-gray-100"
             >

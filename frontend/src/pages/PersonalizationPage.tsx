@@ -192,18 +192,28 @@ export function PersonalizationPage() {
       </div>
 
       {/* Focus Area Alert Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 sm:p-5 flex items-start gap-4">
-        <div className="p-2 bg-amber-100 rounded-lg text-amber-700 mt-0.5">
-          <Flame className="h-5 w-5" />
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="p-2 bg-amber-100 rounded-lg text-amber-700 mt-0.5">
+            <Flame className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-amber-900 uppercase tracking-wide">
+              Today's Recommended Focus
+            </h3>
+            <p className="text-sm font-medium text-amber-800 mt-0.5">
+              {profile.recommended_focus}
+            </p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h3 className="text-sm font-bold text-amber-900 uppercase tracking-wide">
-            Today's Recommended Focus
-          </h3>
-          <p className="text-sm font-medium text-amber-800 mt-0.5">
-            {profile.recommended_focus}
-          </p>
-        </div>
+        <Button
+          size="sm"
+          onClick={() => navigate('/adaptive')}
+          className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 self-start sm:self-center flex items-center gap-1.5 font-semibold"
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>View Adaptive Plan</span>
+        </Button>
       </div>
 
       {/* SECTION 1: Prioritized Recommendations */}
