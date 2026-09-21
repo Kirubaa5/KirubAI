@@ -151,7 +151,7 @@ async def test_fear_receives_natural_and_non_generic_content(client, auth_header
 
 @pytest.mark.asyncio
 async def test_unknown_word_safe_structure_and_no_hallucinations(client, auth_headers):
-    """Ensure unknown words return clean, grammatically safe structures without fabricated synonyms."""
+    """Ensure words return clean, authentic linguistic structures without template hallucinations."""
     res = client.post("/api/v1/vocabulary", headers=auth_headers, json={"word": "unprecedentedly"})
     assert res.status_code == 201
     vocab_id = res.json()["id"]
@@ -159,18 +159,18 @@ async def test_unknown_word_safe_structure_and_no_hallucinations(client, auth_he
     learn = client.get(f"/api/v1/vocabulary/{vocab_id}/learn", headers=auth_headers).json()
     details = learn["details"]
 
-    # Suffix inference should identify adverb
+    # Suffix inference / dictionary identifies adverb
     assert details["part_of_speech"] == "adverb"
 
-    # No fabricated phrases
+    # Authentic semantic synonyms
+    assert any(s in details["synonyms"] for s in ["extraordinarily", "exceptionally", "incomparably", "uniquely", "phenomenally"])
     assert "term related to" not in str(details["synonyms"])
     assert "concept of" not in str(details["synonyms"])
-    assert details["synonyms"] == []
-    assert details["antonyms"] == []
 
     # Safe word forms without fake suffixes like 'unprecedentedlytion'
     assert "unprecedentedlytion" not in str(details["word_forms"])
-    assert details["word_forms"] == {"base": "unprecedentedly"}
+    assert details["word_forms"].get("adverb") == "unprecedentedly"
+
 
 
 @pytest.mark.asyncio

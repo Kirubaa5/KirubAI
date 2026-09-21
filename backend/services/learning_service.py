@@ -1,4 +1,5 @@
-from typing import List
+import re
+from typing import List, Optional
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -10,16 +11,29 @@ from ai.openai_provider import OpenAIProvider
 from ai.schemas import WordExplanationAI, ExampleSetAI
 from ai.prompts.explanation import build_explanation_prompt, EXPLANATION_SYSTEM_PROMPT
 from ai.prompts.examples import build_examples_prompt, EXAMPLES_SYSTEM_PROMPT
+from ai.validation import (
+    validate_vocabulary_explanation,
+    validate_vocabulary_examples,
+    is_circular_or_generic_definition,
+    is_generic_contextual_meaning,
+    has_generic_collocations,
+    has_generic_examples,
+    GENERIC_EXAMPLE_PATTERNS,
+)
 from config import settings
 
 
 def get_llm_provider() -> LLMProvider:
     if settings.LLM_PROVIDER == "openai" and settings.OPENAI_API_KEY:
-        return OpenAIProvider()
+        return OpenAIProvider(api_key=settings.OPENAI_API_KEY)
+    if settings.LLM_PROVIDER == "openrouter" and settings.OPENROUTER_API_KEY:
+        return OpenAIProvider(api_key=settings.OPENROUTER_API_KEY)
+    if settings.LLM_PROVIDER == "gemini" and settings.GEMINI_API_KEY:
+        return OpenAIProvider(api_key=settings.GEMINI_API_KEY)
     return MockLLMProvider()
 
 
-def is_details_stale(word: str, details: WordDetails | None) -> bool:
+def is_details_stale(word: str, details: Optional[WordDetails]) -> bool:
     """Determine if cached WordDetails contain obsolete, generic, or low-quality fallback data."""
     if not details:
         return True
@@ -36,13 +50,20 @@ def is_details_stale(word: str, details: WordDetails | None) -> bool:
         if details.pronunciation_text != curated.get("pronunciation_text"):
             return True
 
-    # 2. Check for legacy generic fallback markers
-    sm = (details.simple_meaning or "").lower()
-    if "general meaning, usage, and definition" in sm:
+    # 2. Semantic validation checks on cached DB fields
+    if is_circular_or_generic_definition(word, details.simple_meaning):
         return True
-    if details.part_of_speech == "word":
+
+    if is_generic_contextual_meaning(word, details.contextual_meaning):
         return True
+
+    if details.part_of_speech in ["word", "term", "unknown", "", None]:
+        return True
+
     if details.pronunciation_text == f"/{clean}/":
+        return True
+
+    if has_generic_collocations(word, details.collocations):
         return True
 
     # 3. Check for placeholder synonyms
@@ -52,14 +73,7 @@ def is_details_stale(word: str, details: WordDetails | None) -> bool:
             if "term related to" in syn_str or "concept of" in syn_str:
                 return True
 
-    # 4. Check for placeholder collocations
-    if details.collocations:
-        for col in details.collocations:
-            col_str = str(col).lower()
-            if "in context" in col_str or "use '" in col_str:
-                return True
-
-    # 5. Check for bad template word forms (e.g. 'vividlytion', 'hassletion')
+    # 4. Check for bad template word forms (e.g. 'vividlytion', 'hassletion')
     if details.word_forms:
         wf_str = str(details.word_forms).lower()
         if f"{clean}tion" in wf_str and clean not in ("hesitate", "attract", "direct", "react", "instruct", "connect"):
@@ -68,7 +82,7 @@ def is_details_stale(word: str, details: WordDetails | None) -> bool:
     return False
 
 
-def is_examples_stale(word: str, examples: List[VocabularyExample] | None) -> bool:
+def is_examples_stale(word: str, examples: Optional[List[VocabularyExample]]) -> bool:
     """Determine if cached examples contain obsolete, generic, or low-quality fallback data."""
     if not examples or len(examples) == 0:
         return True
@@ -85,25 +99,17 @@ def is_examples_stale(word: str, examples: List[VocabularyExample] | None) -> bo
             if not ex.example_text or ex.example_text not in curated_texts:
                 return True
 
-    # 2. Check for legacy boilerplate example phrases
-    legacy_markers = [
-        "applied to our current workflow",
-        "used the word",
-        "importance of understanding",
-        "was impressed when the candidate used",
-        "highlighted",
-        "family discussion centered around the idea of",
-        "no confusion about",
-        "people in different regions interpret",
-        "make sure to clarify her perspective on",
-        "into daily conversations helps build confidence in english",
-    ]
+    # 2. Check for generic / boilerplate example patterns
     for ex in examples:
         if not ex.example_text:
             return True
         text_lower = ex.example_text.lower()
-        if any(marker in text_lower for marker in legacy_markers):
+        if any(re.search(pat, text_lower) for pat in GENERIC_EXAMPLE_PATTERNS):
             return True
+
+    # 3. Check for structural template repetition
+    if has_generic_examples(word, examples):
+        return True
 
     return False
 
@@ -114,14 +120,18 @@ class LearningService:
         db: Session,
         user: User,
         vocab_id: str,
-        llm: LLMProvider | None = None,
+        llm: Optional[LLMProvider] = None,
     ) -> Vocabulary:
         """Fetch cached word details & examples or generate/upgrade them via AI Provider."""
         clean_target = vocab_id.strip().lower()
-        vocab = db.query(Vocabulary).filter(
-            or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
-            Vocabulary.user_id == user.id,
-        ).first()
+        vocab = (
+            db.query(Vocabulary)
+            .filter(
+                or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
+                Vocabulary.user_id == user.id,
+            )
+            .first()
+        )
 
         if not vocab:
             raise HTTPException(
@@ -134,12 +144,28 @@ class LearningService:
 
         # Generate or upgrade WordDetails if not cached or if stale
         if is_details_stale(vocab.word, vocab.details):
-            explanation_data: WordExplanationAI = await provider.generate_structured(
-                prompt=build_explanation_prompt(vocab.word),
-                response_schema=WordExplanationAI,
-                system_prompt=EXPLANATION_SYSTEM_PROMPT,
-                temperature=0.3,
-            )
+            try:
+                explanation_data: WordExplanationAI = await provider.generate_structured(
+                    prompt=build_explanation_prompt(vocab.word),
+                    response_schema=WordExplanationAI,
+                    system_prompt=EXPLANATION_SYSTEM_PROMPT,
+                    temperature=0.3,
+                )
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=f"Unable to generate vocabulary details for '{vocab.word}': {str(e)}",
+                )
+
+            # Validate generated explanation semantically
+            is_valid, err_msg = validate_vocabulary_explanation(vocab.word, explanation_data)
+            if not is_valid:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"AI provider returned invalid vocabulary content: {err_msg}",
+                )
 
             if vocab.details:
                 vocab.details.simple_meaning = explanation_data.simple_meaning
@@ -171,12 +197,28 @@ class LearningService:
 
         # Generate or upgrade Examples if not cached or if stale
         if is_examples_stale(vocab.word, vocab.examples):
-            examples_data: ExampleSetAI = await provider.generate_structured(
-                prompt=build_examples_prompt(vocab.word),
-                response_schema=ExampleSetAI,
-                system_prompt=EXAMPLES_SYSTEM_PROMPT,
-                temperature=0.7,
-            )
+            try:
+                examples_data: ExampleSetAI = await provider.generate_structured(
+                    prompt=build_examples_prompt(vocab.word),
+                    response_schema=ExampleSetAI,
+                    system_prompt=EXAMPLES_SYSTEM_PROMPT,
+                    temperature=0.7,
+                )
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=f"Unable to generate conversational examples for '{vocab.word}': {str(e)}",
+                )
+
+            # Validate generated examples semantically
+            is_valid_ex, err_msg_ex = validate_vocabulary_examples(vocab.word, examples_data)
+            if not is_valid_ex:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"AI provider returned invalid examples: {err_msg_ex}",
+                )
 
             # Assign directly to the relationship collection for clean cascading replacement
             vocab.examples = [
@@ -200,10 +242,14 @@ class LearningService:
     def mark_word_learned(db: Session, user: User, vocab_id: str) -> Vocabulary:
         """Transition vocabulary status from 'new' to 'learned'."""
         clean_target = vocab_id.strip().lower()
-        vocab = db.query(Vocabulary).filter(
-            or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
-            Vocabulary.user_id == user.id,
-        ).first()
+        vocab = (
+            db.query(Vocabulary)
+            .filter(
+                or_(Vocabulary.id == vocab_id, Vocabulary.word == clean_target),
+                Vocabulary.user_id == user.id,
+            )
+            .first()
+        )
 
         if not vocab:
             raise HTTPException(
@@ -218,6 +264,7 @@ class LearningService:
             # Award XP to user for learning a new word (10 XP)
             user.xp += 10
             from services.gamification_service import GamificationService
+
             GamificationService.record_activity(db, user)
             db.commit()
             db.refresh(vocab)

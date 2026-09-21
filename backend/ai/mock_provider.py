@@ -1,6 +1,7 @@
 import re
 from typing import TypeVar, Type, List, Dict, Optional
 from pydantic import BaseModel
+from fastapi import HTTPException, status
 from ai.provider import LLMProvider
 from ai.schemas import (
     WordExplanationAI,
@@ -424,6 +425,369 @@ MOCK_VOCABULARY_DB: Dict[str, Dict] = {
             ("Daily life", "Finding innovative ways to solve small daily hurdles keeps your mind sharp and engaged."),
         ],
     },
+    "frivolous": {
+        "simple_meaning": "Not having any serious purpose or value; carefree and superficial.",
+        "contextual_meaning": "Used to describe actions, spending, lawsuits, or remarks that waste time or money on trivial, unnecessary matters.",
+        "part_of_speech": "adjective",
+        "pronunciation_text": "FRIV-uh-lus",
+        "synonyms": ["silly", "trivial", "foolish", "superficial", "inconsequential"],
+        "antonyms": ["serious", "sensible", "grave", "thoughtful"],
+        "word_forms": {
+            "adjective": "frivolous",
+            "noun": "frivolousness",
+            "adverb": "frivolously",
+        },
+        "collocations": [
+            "frivolous lawsuit",
+            "frivolous spending",
+            "frivolous remark",
+            "dismiss as frivolous",
+        ],
+        "cefr_level": "C1",
+        "difficulty_score": 7.0,
+        "examples": [
+            ("Workplace", "The legal department quickly dismissed the claim as a frivolous lawsuit."),
+            ("Friends", "She warned her friend against frivolous spending when saving for a house deposit."),
+            ("Meeting", "The board refused to entertain frivolous suggestions during the annual budget review."),
+            ("Interview", "He explained how his team eliminates frivolous tasks to focus on high-impact customer objectives."),
+            ("College", "The professor urged students not to make frivolous arguments without citing primary textual evidence."),
+            ("Family", "My parents always advised against wasting hard-earned savings on frivolous impulse purchases."),
+            ("Shopping", "I decided to return the designer sunglasses, realizing it was a completely frivolous impulse buy."),
+            ("Travel", "Packing heavy novelty souvenirs was a frivolous habit that only added unnecessary baggage fees."),
+            ("Phone call", "The customer service manager apologized for the frivolous delay caused by an administrative error."),
+            ("Daily life", "Distinguishing between essential goals and frivolous distractions is key to staying productive."),
+        ],
+    },
+    "behavior": {
+        "simple_meaning": "The way in which one acts or conducts oneself, especially toward others.",
+        "contextual_meaning": "Used across psychology, workplaces, schools, and everyday life to describe human conduct, patterns of action, or social interaction.",
+        "part_of_speech": "noun",
+        "pronunciation_text": "bih-HAYV-yer",
+        "synonyms": ["conduct", "actions", "manner", "demeanor", "bearing"],
+        "antonyms": ["inaction", "passivity"],
+        "word_forms": {
+            "noun": "behavior",
+            "verb": "behave",
+            "adjective": "behavioral",
+            "adverb": "behaviorally",
+        },
+        "collocations": [
+            "acceptable behavior",
+            "change in behavior",
+            "aggressive behavior",
+            "pattern of behavior",
+        ],
+        "cefr_level": "B1",
+        "difficulty_score": 3.5,
+        "examples": [
+            ("Workplace", "The HR manager established clear standards for professional behavior in the office."),
+            ("Friends", "We noticed a sudden change in his behavior after he started his demanding new job."),
+            ("Meeting", "The committee addressed disruptive behavior during team presentations."),
+            ("Interview", "She asked behavioral questions to understand how candidates handle conflict under pressure."),
+            ("College", "The sociology lecture analyzed how peer groups influence adolescent social behavior."),
+            ("Family", "Parents play a fundamental role in guiding positive behavior during early childhood."),
+            ("Shopping", "E-commerce platforms analyze consumer browsing behavior to personalize recommendations."),
+            ("Travel", "Respecting local customs and cultural behavior is essential when visiting another country."),
+            ("Phone call", "The supervisor called to commend the support agent for exemplary customer service behavior."),
+            ("Daily life", "Consistent daily habits gradually transform your long-term personal behavior."),
+        ],
+    },
+    "serendipity": {
+        "simple_meaning": "The occurrence and development of events by chance in a happy or beneficial way.",
+        "contextual_meaning": "Used to describe fortunate discoveries, unplanned happy accidents, or unexpected positive connections.",
+        "part_of_speech": "noun",
+        "pronunciation_text": "sair-un-DIP-ih-tee",
+        "synonyms": ["chance", "fluke", "fortune", "luck", "coincidence"],
+        "antonyms": ["misfortune", "bad luck", "design", "deliberation"],
+        "word_forms": {
+            "noun": "serendipity",
+            "adjective": "serendipitous",
+            "adverb": "serendipitously",
+        },
+        "collocations": [
+            "pure serendipity",
+            "moment of serendipity",
+            "stroke of serendipity",
+            "by serendipity",
+        ],
+        "cefr_level": "C1",
+        "difficulty_score": 7.5,
+        "examples": [
+            ("Workplace", "Finding our lead developer at a local coffee shop meetup was pure serendipity."),
+            ("Friends", "Running into my childhood friend at the airport was a delightful moment of serendipity."),
+            ("Meeting", "The team stumbled upon an innovative solution through sheer serendipity during brainstorming."),
+            ("Interview", "She described how serendipity played a role in launching her first startup venture."),
+            ("College", "Discovering that rare manuscript in the university library was a stroke of serendipity."),
+            ("Family", "My grandparents always told the story of their serendipitous first meeting in a train station."),
+            ("Shopping", "I found the exact vintage jacket I was looking for purely by serendipity in a thrift store."),
+            ("Travel", "Taking a wrong turn led us to a breathtaking hidden beach through unexpected serendipity."),
+            ("Phone call", "He called to say that serendipity brought him in touch with a key angel investor."),
+            ("Daily life", "Staying open to new experiences creates more opportunities for serendipity in everyday life."),
+        ],
+    },
+    "ephemeral": {
+        "simple_meaning": "Lasting for a very short time; fleeting or transitory.",
+        "contextual_meaning": "Used to describe short-lived trends, temporary beauty, fleeting emotions, or momentary digital content.",
+        "part_of_speech": "adjective",
+        "pronunciation_text": "ih-FEM-er-ul",
+        "synonyms": ["fleeting", "transient", "momentary", "brief", "temporary"],
+        "antonyms": ["permanent", "enduring", "everlasting", "eternal"],
+        "word_forms": {
+            "adjective": "ephemeral",
+            "noun": "ephemerality",
+            "adverb": "ephemerally",
+        },
+        "collocations": [
+            "ephemeral nature",
+            "ephemeral beauty",
+            "ephemeral trend",
+            "largely ephemeral",
+        ],
+        "cefr_level": "C2",
+        "difficulty_score": 8.0,
+        "examples": [
+            ("Workplace", "The marketing director noted that social media buzz is often ephemeral without sustained engagement."),
+            ("Friends", "We reflected on how ephemeral youth feels when looking back at old photographs."),
+            ("Meeting", "The strategy committee agreed not to overinvest in ephemeral market trends."),
+            ("Interview", "The candidate emphasized building enduring software architectures rather than ephemeral fixes."),
+            ("College", "The literature professor lectured on the ephemeral nature of fame in classical tragedies."),
+            ("Family", "Watching the children grow up made our parents appreciate the ephemeral beauty of childhood."),
+            ("Shopping", "Fast-fashion garments are designed for ephemeral popularity rather than durability."),
+            ("Travel", "The cherry blossoms in Kyoto have an ephemeral bloom that draws visitors from across the globe."),
+            ("Phone call", "She called to remind me that setbacks at work are usually ephemeral and pass quickly."),
+            ("Daily life", "Recognizing the ephemeral nature of moments helps us savor everyday joys more deeply."),
+        ],
+    },
+    "unprecedentedly": {
+        "simple_meaning": "In a way that has never happened, been done, or been known before.",
+        "contextual_meaning": "Used when describing record-breaking statistics, unprecedented speeds, extreme scale, or historic shifts.",
+        "part_of_speech": "adverb",
+        "pronunciation_text": "un-PRES-ih-den-tid-lee",
+        "synonyms": ["extraordinarily", "exceptionally", "incomparably", "uniquely", "phenomenally"],
+        "antonyms": ["ordinarily", "typically", "customarily", "commonly"],
+        "word_forms": {
+            "adverb": "unprecedentedly",
+            "adjective": "unprecedented",
+            "noun": "unprecedentedness",
+        },
+        "collocations": [
+            "unprecedentedly high",
+            "unprecedentedly rapid",
+            "grow unprecedentedly",
+            "unprecedentedly complex",
+        ],
+        "cefr_level": "C1",
+        "difficulty_score": 7.5,
+        "examples": [
+            ("Workplace", "The platform handled an unprecedentedly large volume of transactions during Black Friday."),
+            ("Friends", "She adapted unprecedentedly fast to living in a foreign city with a new language."),
+            ("Meeting", "The CFO reported an unprecedentedly strong quarterly growth in international markets."),
+            ("Interview", "He led a team that completed the critical migration in an unprecedentedly tight timeframe."),
+            ("College", "The physics department observed an unprecedentedly high particle acceleration in the lab."),
+            ("Family", "Our family gathered for an unprecedentedly large reunion with four generations present."),
+            ("Shopping", "Demand for the newly released product surged to an unprecedentedly high level."),
+            ("Travel", "Winter storms caused unprecedentedly severe flight delays across major international hubs."),
+            ("Phone call", "The doctor called to report that the patient's recovery was progressing unprecedentedly well."),
+            ("Daily life", "Renewable energy adoption is expanding at an unprecedentedly rapid pace worldwide."),
+        ],
+    },
+    "confident": {
+        "simple_meaning": "Feeling or showing certainty about something or self-assurance in one's abilities.",
+        "contextual_meaning": "Used when expressing poise, self-trust, or certainty in workplace meetings, presentations, or social interactions.",
+        "part_of_speech": "adjective",
+        "pronunciation_text": "KON-fih-dunt",
+        "synonyms": ["assured", "self-assured", "certain", "positive", "poised"],
+        "antonyms": ["hesitant", "insecure", "doubtful", "uncertain"],
+        "word_forms": {
+            "adjective": "confident",
+            "noun": "confidence",
+            "adverb": "confidently",
+        },
+        "collocations": [
+            "feel confident",
+            "confident in one's abilities",
+            "remain confident",
+            "quietly confident",
+        ],
+        "cefr_level": "B1",
+        "difficulty_score": 3.5,
+        "examples": [
+            ("Workplace", "She felt confident presenting the project deliverables to executive stakeholders."),
+            ("Friends", "His encouraging words made me feel much more confident about the upcoming audition."),
+            ("Meeting", "The engineering manager was confident that the team would deliver the sprint goals on time."),
+            ("Interview", "Speaking clearly and making eye contact helps you appear confident during job interviews."),
+            ("College", "After reviewing the syllabus thoroughly, the students felt confident for the midterm exam."),
+            ("Family", "My parents were confident that our hard work would lead to positive opportunities."),
+            ("Shopping", "Positive customer reviews made me confident in purchasing this brand of kitchenware."),
+            ("Travel", "Having an offline navigation map made us confident exploring the unfamiliar city streets."),
+            ("Phone call", "He sounded calm and confident on the call when discussing the contract renegotiation."),
+            ("Daily life", "Practicing public speaking in small groups helps you become more confident in daily conversations."),
+        ],
+    },
+    "perseverance": {
+        "simple_meaning": "Persistence in doing something despite difficulty or delay in achieving success.",
+        "contextual_meaning": "Used when commending dedication, grit, and ongoing effort through challenging endeavors.",
+        "part_of_speech": "noun",
+        "pronunciation_text": "per-suh-VEER-unss",
+        "synonyms": ["persistence", "tenacity", "determination", "grit", "endurance"],
+        "antonyms": ["giving up", "apathy", "hesitation", "surrender"],
+        "word_forms": {
+            "noun": "perseverance",
+            "verb": "persevere",
+            "adjective": "perseverant",
+        },
+        "collocations": [
+            "show perseverance",
+            "through perseverance",
+            "admirable perseverance",
+            "require perseverance",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 6.0,
+        "examples": [
+            ("Workplace", "Her perseverance in debugging the distributed cache issue earned praise from the lead engineer."),
+            ("Friends", "It took tremendous perseverance for my friend to train for and complete the marathon."),
+            ("Meeting", "The CEO commended the staff for their perseverance during market uncertainties."),
+            ("Interview", "He spoke about the perseverance needed to bootstrap his first software product."),
+            ("College", "Academic research often demands years of patience and quiet perseverance."),
+            ("Family", "My grandfather's perseverance through postwar recovery inspired the whole family."),
+            ("Shopping", "After months of perseverance, I finally found an authentic mid-century desk."),
+            ("Travel", "Hiking to the remote monastery required physical perseverance, but the view was worth it."),
+            ("Phone call", "She called to thank her mentor, noting that his advice helped her maintain perseverance."),
+            ("Daily life", "Building meaningful habits is less about raw motivation and more about consistent perseverance."),
+        ],
+    },
+    "candid": {
+        "simple_meaning": "Truthful and straightforward; frank and outspoken.",
+        "contextual_meaning": "Used when describing honest feedback, transparent discussions, or authentic conversations.",
+        "part_of_speech": "adjective",
+        "pronunciation_text": "KAN-did",
+        "synonyms": ["frank", "honest", "forthright", "direct", "genuine"],
+        "antonyms": ["guarded", "evasive", "dishonest", "insincere"],
+        "word_forms": {
+            "adjective": "candid",
+            "noun": "candidness",
+            "adverb": "candidly",
+        },
+        "collocations": [
+            "candid discussion",
+            "candid feedback",
+            "be candid with",
+            "candid interview",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 5.5,
+        "examples": [
+            ("Workplace", "We had a candid conversation about the project's timeline and realistic resource constraints."),
+            ("Friends", "I always appreciate my best friend's candid advice when I am facing a difficult dilemma."),
+            ("Meeting", "The director gave a candid assessment of the company's financial performance this quarter."),
+            ("Interview", "The candidate was remarkably candid about past failures and the lessons learned from them."),
+            ("College", "Students welcomed the professor's candid feedback on their research proposals."),
+            ("Family", "Having candid family discussions helps resolve misunderstandings before they grow."),
+            ("Shopping", "Online review forums offer candid consumer opinions about product durability."),
+            ("Travel", "Local residents gave us candid recommendations on which tourist spots to avoid."),
+            ("Phone call", "He called to have a candid conversation about expectations for the upcoming partnership."),
+            ("Daily life", "Being candid with yourself about your strengths and weaknesses fosters personal growth."),
+        ],
+    },
+    "leverage": {
+        "simple_meaning": "To use something to maximum advantage.",
+        "contextual_meaning": "Commonly used in professional and strategic contexts to describe utilizing existing assets, skills, or insights effectively.",
+        "part_of_speech": "verb",
+        "pronunciation_text": "LEV-er-ij",
+        "synonyms": ["utilize", "exploit", "capitalize on", "harness", "maximize"],
+        "antonyms": ["waste", "ignore", "underutilize", "neglect"],
+        "word_forms": {
+            "verb": "leverage",
+            "noun": "leverage",
+        },
+        "collocations": [
+            "leverage technology",
+            "leverage data",
+            "leverage strengths",
+            "gain leverage",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 6.0,
+        "examples": [
+            ("Workplace", "Our startup leveraged open-source libraries to rapidly build the prototype."),
+            ("Friends", "She leveraged her graphic design background to create stunning invitations for her friend's wedding."),
+            ("Meeting", "The product team discussed how to leverage user analytics to boost app engagement."),
+            ("Interview", "He explained how he leveraged cross-departmental relationships to accelerate project delivery."),
+            ("College", "Students were encouraged to leverage university alumni networks during their job search."),
+            ("Family", "Our family leveraged solar energy grants to make our home more energy efficient."),
+            ("Shopping", "Shoppers can leverage loyalty points and seasonal discounts to save substantially."),
+            ("Travel", "We leveraged train pass discounts to explore multiple regions economically."),
+            ("Phone call", "The consultant advised the client on how to leverage customer feedback to refine product features."),
+            ("Daily life", "Learning to leverage modern digital tools helps streamline daily administrative tasks."),
+        ],
+    },
+    "ambiguous": {
+        "simple_meaning": "Open to more than one interpretation; not having one obvious meaning.",
+        "contextual_meaning": "Used when instructions, contract clauses, or statements lack clarity or allow conflicting interpretations.",
+        "part_of_speech": "adjective",
+        "pronunciation_text": "am-BIG-yoo-us",
+        "synonyms": ["unclear", "equivocal", "vague", "open to interpretation", "obscure"],
+        "antonyms": ["clear", "unambiguous", "explicit", "definite"],
+        "word_forms": {
+            "adjective": "ambiguous",
+            "noun": "ambiguity",
+            "adverb": "ambiguously",
+        },
+        "collocations": [
+            "ambiguous wording",
+            "remain ambiguous",
+            "ambiguous statement",
+            "highly ambiguous",
+        ],
+        "cefr_level": "B2",
+        "difficulty_score": 6.5,
+        "examples": [
+            ("Workplace", "The requirements specification was too ambiguous, leading to confusion among developers."),
+            ("Friends", "His ambiguous text message left us unsure whether he was joining us for dinner."),
+            ("Meeting", "The legal team requested clarification on an ambiguous clause in the vendor agreement."),
+            ("Interview", "She demonstrated how she proactively asks clarifying questions when given ambiguous project mandates."),
+            ("College", "The philosophy professor analyzed the ambiguous ending of the classical novel."),
+            ("Family", "Clear communication prevents ambiguous statements from causing family misunderstandings."),
+            ("Shopping", "The return policy had ambiguous terms regarding international shipping fees."),
+            ("Travel", "The trail marker was ambiguous, so we consulted our GPS to confirm the correct path."),
+            ("Phone call", "I called customer support to clarify an ambiguous charge on my monthly invoice."),
+            ("Daily life", "Learning to navigate ambiguous situations with calm and curiosity is a valuable life skill."),
+        ],
+    },
+    "ubiquitous": {
+        "simple_meaning": "Present, appearing, or found everywhere.",
+        "contextual_meaning": "Used to describe technologies, consumer goods, or social phenomena that have become universally widespread.",
+        "part_of_speech": "adjective",
+        "pronunciation_text": "yoo-BIK-wih-tus",
+        "synonyms": ["omnipresent", "everywhere", "pervasive", "widespread", "universal"],
+        "antonyms": ["rare", "scarce", "uncommon", "isolated"],
+        "word_forms": {
+            "adjective": "ubiquitous",
+            "noun": "ubiquity",
+            "adverb": "ubiquitously",
+        },
+        "collocations": [
+            "become ubiquitous",
+            "nearly ubiquitous",
+            "ubiquitous presence",
+            "ubiquitous technology",
+        ],
+        "cefr_level": "C1",
+        "difficulty_score": 7.5,
+        "examples": [
+            ("Workplace", "Cloud computing has become ubiquitous in modern software engineering infrastructure."),
+            ("Friends", "Smartphones have become so ubiquitous that it is rare to see anyone without one."),
+            ("Meeting", "The executive team discussed how mobile payments are now ubiquitous in Asian markets."),
+            ("Interview", "The engineer highlighted his extensive experience with ubiquitous web frameworks."),
+            ("College", "The sociology department published a paper on the ubiquitous influence of social media on campus."),
+            ("Family", "Wi-Fi connections are now a ubiquitous utility in almost every modern household."),
+            ("Shopping", "Contactless checkout terminals have become ubiquitous in retail stores across the city."),
+            ("Travel", "Ride-sharing apps are now ubiquitous in international transit hubs around the world."),
+            ("Phone call", "He called to point out that automated chatbots are becoming ubiquitous in online banking."),
+            ("Daily life", "Digital screens have become a ubiquitous aspect of 21st-century daily living."),
+        ],
+    },
 }
 
 
@@ -442,7 +806,7 @@ def _infer_part_of_speech(word: str) -> str:
 
 
 def _get_dynamic_mock_explanation(word: str) -> WordExplanationAI:
-    """Generate meaningful, non-hallucinated mock data for any word not in the curated DB."""
+    """Retrieve curated mock explanation. For unknown words in mock mode, require live LLM provider."""
     clean = word.strip().lower()
     if clean in MOCK_VOCABULARY_DB:
         data = MOCK_VOCABULARY_DB[clean]
@@ -459,38 +823,9 @@ def _get_dynamic_mock_explanation(word: str) -> WordExplanationAI:
             difficulty_score=data["difficulty_score"],
         )
 
-    pos = _infer_part_of_speech(clean)
-
-    if pos == "adverb":
-        simple_meaning = f"In a manner characterized by '{clean}'; describes how an action or process is carried out."
-        collocations = [f"act {clean}", f"speak {clean}", f"clearly {clean}", f"consistently {clean}"]
-    elif pos == "noun":
-        simple_meaning = f"The state, quality, concept, or condition associated with '{clean}'."
-        collocations = [f"experience {clean}", f"sense of {clean}", f"understand {clean}", f"manage {clean}"]
-    elif pos == "adjective":
-        simple_meaning = f"Characterized by or exhibiting the qualities and nature of '{clean}'."
-        collocations = [f"highly {clean}", f"truly {clean}", f"{clean} approach", f"{clean} impact"]
-    elif pos == "verb":
-        simple_meaning = f"To demonstrate, carry out, or engage in the action of '{clean}'."
-        collocations = [f"learn to {clean}", f"manage to {clean}", f"effectively {clean}", f"begin to {clean}"]
-    else:
-        simple_meaning = f"A core English term used to express the state, quality, or action of '{clean}'."
-        collocations = [f"understand {clean}", f"experience {clean}", f"clearly {clean}", f"manage {clean}"]
-
-    contextual_meaning = f"Used in professional, academic, and daily communication when expressing ideas involving '{clean}'."
-
-    # Return safe, non-fabricated linguistic structure
-    return WordExplanationAI(
-        simple_meaning=simple_meaning,
-        contextual_meaning=contextual_meaning,
-        part_of_speech=pos,
-        pronunciation_text=clean.upper(),
-        synonyms=[],
-        antonyms=[],
-        word_forms={"base": clean},
-        collocations=collocations,
-        cefr_level="B1",
-        difficulty_score=5.0,
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=f"Detailed AI vocabulary content for '{word}' is not available in mock mode. Please configure an active LLM provider (OpenAI / Gemini / OpenRouter).",
     )
 
 
@@ -733,7 +1068,7 @@ def _build_actionable_tips(errors: List[DiagnosticErrorAI]) -> List[str]:
 
 
 def _get_dynamic_mock_examples(word: str) -> ExampleSetAI:
-    """Generate 10 distinct conversational examples for a word."""
+    """Retrieve curated mock examples. For unknown words in mock mode, require live LLM provider."""
     clean = word.strip().lower()
     if clean in MOCK_VOCABULARY_DB and "examples" in MOCK_VOCABULARY_DB[clean]:
         examples = [
@@ -742,20 +1077,9 @@ def _get_dynamic_mock_examples(word: str) -> ExampleSetAI:
         ]
         return ExampleSetAI(examples=examples)
 
-    contexts = [
-        ("Workplace", f"In our team meeting, we discussed how '{clean}' impacts our project roadmap and key deliverables."),
-        ("Friends", f"I caught up with my friend to share how understanding '{clean}' helped me navigate a recent challenge."),
-        ("Meeting", f"The project lead highlighted '{clean}' as an important consideration for the upcoming quarter."),
-        ("Interview", f"During the interview, the candidate explained how they approach '{clean}' in collaborative environments."),
-        ("College", f"In today's seminar, the professor analyzed the concept of '{clean}' through real-world case studies."),
-        ("Family", f"My family had an open conversation about how to handle '{clean}' with empathy and patience."),
-        ("Shopping", f"The store representative clearly explained all details to ensure there was no confusion regarding '{clean}'."),
-        ("Travel", f"While traveling abroad, we learned how different cultures perceive and respond to '{clean}'."),
-        ("Phone call", f"She called to give an update on the situation and how they plan to address '{clean}' moving forward."),
-        ("Daily life", f"Reflecting on '{clean}' each day helps develop stronger communication and self-awareness."),
-    ]
-    return ExampleSetAI(
-        examples=[ConversationalExampleAI(context_label=ctx, example_text=txt) for ctx, txt in contexts]
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=f"Conversational examples for '{word}' are not available in mock mode. Please configure an active LLM provider (OpenAI / Gemini / OpenRouter).",
     )
 
 
