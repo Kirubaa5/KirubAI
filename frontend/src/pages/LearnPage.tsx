@@ -57,7 +57,7 @@ function getLearningErrorMessage(error: unknown): { title: string; message: stri
       message:
         typeof detail === 'string' && detail.trim().length > 0
           ? detail
-          : "This word isn't available in local demo mode. Configure an active AI provider to generate learning content for new words.",
+          : "This word isn't available in local demo mode yet. Configure an active AI provider to generate learning content for any word.",
     }
   }
 

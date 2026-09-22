@@ -180,6 +180,25 @@ describe('LearnPage', () => {
     })
   })
 
+  it('renders suggested default mock-mode message when 503 has no detail', async () => {
+    const mockError = {
+      response: {
+        status: 503,
+        data: {},
+      },
+    }
+    vi.mocked(vocabularyApi.getLearningContent).mockRejectedValueOnce(mockError)
+
+    renderLearnPage('vocab-habit')
+
+    await waitFor(() => {
+      expect(screen.getByText('Learning content unavailable')).toBeInTheDocument()
+      expect(
+        screen.getByText("This word isn't available in local demo mode yet. Configure an active AI provider to generate learning content for any word.")
+      ).toBeInTheDocument()
+    })
+  })
+
   it('renders custom backend detail message when provided on error', async () => {
     const mockError = {
       response: {
