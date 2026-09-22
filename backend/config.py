@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OPENROUTER_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+    OPENROUTER_MODEL: str = "openai/gpt-4o-mini"
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

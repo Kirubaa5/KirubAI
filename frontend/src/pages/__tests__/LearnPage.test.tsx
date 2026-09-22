@@ -133,7 +133,7 @@ function renderLearnPage(vocabId = 'vocab-123') {
 
 describe('LearnPage', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   it('renders loading state while generating AI content', () => {

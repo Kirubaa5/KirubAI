@@ -5,9 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from models.vocabulary import Vocabulary, WordDetails, VocabularyExample
 from models.user import User
-from ai.provider import LLMProvider
-from ai.mock_provider import MockLLMProvider, MOCK_VOCABULARY_DB
-from ai.openai_provider import OpenAIProvider
+from ai.provider import LLMProvider, get_llm_provider
 from ai.schemas import WordExplanationAI, ExampleSetAI
 from ai.prompts.explanation import build_explanation_prompt, EXPLANATION_SYSTEM_PROMPT
 from ai.prompts.examples import build_examples_prompt, EXAMPLES_SYSTEM_PROMPT
@@ -20,17 +18,6 @@ from ai.validation import (
     has_generic_examples,
     GENERIC_EXAMPLE_PATTERNS,
 )
-from config import settings
-
-
-def get_llm_provider() -> LLMProvider:
-    if settings.LLM_PROVIDER == "openai" and settings.OPENAI_API_KEY:
-        return OpenAIProvider(api_key=settings.OPENAI_API_KEY)
-    if settings.LLM_PROVIDER == "openrouter" and settings.OPENROUTER_API_KEY:
-        return OpenAIProvider(api_key=settings.OPENROUTER_API_KEY)
-    if settings.LLM_PROVIDER == "gemini" and settings.GEMINI_API_KEY:
-        return OpenAIProvider(api_key=settings.GEMINI_API_KEY)
-    return MockLLMProvider()
 
 
 def is_details_stale(word: str, details: Optional[WordDetails]) -> bool:
@@ -40,17 +27,7 @@ def is_details_stale(word: str, details: Optional[WordDetails]) -> bool:
 
     clean = word.strip().lower()
 
-    # 1. If word is in curated mock dictionary, verify cached data matches curated definitions
-    if clean in MOCK_VOCABULARY_DB:
-        curated = MOCK_VOCABULARY_DB[clean]
-        if details.simple_meaning != curated.get("simple_meaning"):
-            return True
-        if details.part_of_speech != curated.get("part_of_speech"):
-            return True
-        if details.pronunciation_text != curated.get("pronunciation_text"):
-            return True
-
-    # 2. Semantic validation checks on cached DB fields
+    # 1. Semantic validation checks on cached DB fields
     if is_circular_or_generic_definition(word, details.simple_meaning):
         return True
 
@@ -66,14 +43,14 @@ def is_details_stale(word: str, details: Optional[WordDetails]) -> bool:
     if has_generic_collocations(word, details.collocations):
         return True
 
-    # 3. Check for placeholder synonyms
+    # 2. Check for placeholder synonyms
     if details.synonyms:
         for syn in details.synonyms:
             syn_str = str(syn).lower()
             if "term related to" in syn_str or "concept of" in syn_str:
                 return True
 
-    # 4. Check for bad template word forms (e.g. 'vividlytion', 'hassletion')
+    # 3. Check for bad template word forms (e.g. 'vividlytion', 'hassletion')
     if details.word_forms:
         wf_str = str(details.word_forms).lower()
         if f"{clean}tion" in wf_str and clean not in ("hesitate", "attract", "direct", "react", "instruct", "connect"):
@@ -87,19 +64,7 @@ def is_examples_stale(word: str, examples: Optional[List[VocabularyExample]]) ->
     if not examples or len(examples) == 0:
         return True
 
-    clean = word.strip().lower()
-
-    # 1. If in curated mock dictionary, check if all examples match curated list
-    if clean in MOCK_VOCABULARY_DB and "examples" in MOCK_VOCABULARY_DB[clean]:
-        curated_exs = MOCK_VOCABULARY_DB[clean]["examples"]
-        if len(examples) != len(curated_exs):
-            return True
-        curated_texts = {text for _, text in curated_exs}
-        for ex in examples:
-            if not ex.example_text or ex.example_text not in curated_texts:
-                return True
-
-    # 2. Check for generic / boilerplate example patterns
+    # 1. Check for generic / boilerplate example patterns
     for ex in examples:
         if not ex.example_text:
             return True
@@ -107,7 +72,7 @@ def is_examples_stale(word: str, examples: Optional[List[VocabularyExample]]) ->
         if any(re.search(pat, text_lower) for pat in GENERIC_EXAMPLE_PATTERNS):
             return True
 
-    # 3. Check for structural template repetition
+    # 2. Check for structural template repetition
     if has_generic_examples(word, examples):
         return True
 

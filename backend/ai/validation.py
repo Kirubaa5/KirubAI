@@ -122,16 +122,26 @@ def has_generic_examples(word: str, examples: Optional[List[ConversationalExampl
     clean_word = word.strip().lower()
     generic_count = 0
 
+    # Build potential inflected stems for matching
+    stems = {clean_word}
+    if len(clean_word) >= 4:
+        stems.add(clean_word[:-1])  # e.g. "hesitate" -> "hesitat"
+        stems.add(clean_word[:-2])  # e.g. "behavior" -> "behav" / "running" -> "run"
+    if clean_word.endswith("y") and len(clean_word) >= 3:
+        stems.add(clean_word[:-1] + "i")  # e.g. "vividly" -> "vivid"
+
     for ex in examples:
         text = (ex.example_text if hasattr(ex, "example_text") else str(ex)).lower()
         if any(re.search(pat, text) for pat in GENERIC_EXAMPLE_PATTERNS):
             generic_count += 1
-        # Check that target word or its root actually appears in the sentence
-        stem = clean_word[:-1] if clean_word.endswith("e") or clean_word.endswith("y") else clean_word
-        if stem not in text and clean_word not in text:
+            continue
+
+        # Check if word or a recognizable stem appears in the example sentence
+        has_word = any(s in text for s in stems)
+        if not has_word and len(text.split()) > 0:
             generic_count += 1
 
-    return generic_count >= max(2, len(examples) // 3)
+    return generic_count >= max(2, len(examples) // 2)
 
 
 def validate_vocabulary_explanation(word: str, explanation: WordExplanationAI) -> Tuple[bool, Optional[str]]:

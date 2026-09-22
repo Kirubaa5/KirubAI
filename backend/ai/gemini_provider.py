@@ -1,43 +1,22 @@
 import json
-import re
 from typing import TypeVar, Type, List, Dict, Optional
 from pydantic import BaseModel
 import httpx
 from fastapi import HTTPException, status
 from ai.provider import LLMProvider
+from ai.openai_provider import extract_json_payload
 from config import settings
 
 T = TypeVar("T", bound=BaseModel)
 
 
-def extract_json_payload(content: str) -> str:
-    """Extract clean JSON substring from LLM response text, stripping markdown code blocks and wrapping text."""
-    clean = content.strip()
-    if "```json" in clean:
-        m = re.search(r"```json\s*(.*?)\s*```", clean, re.DOTALL)
-        if m:
-            clean = m.group(1).strip()
-    elif "```" in clean:
-        m = re.search(r"```\s*(.*?)\s*```", clean, re.DOTALL)
-        if m:
-            clean = m.group(1).strip()
+class GeminiProvider(LLMProvider):
+    """Google Gemini provider via OpenAI-compatible endpoint."""
 
-    if not (clean.startswith("{") and clean.endswith("}")) and not (clean.startswith("[") and clean.endswith("]")):
-        first_brace = clean.find("{")
-        last_brace = clean.rfind("}")
-        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
-            clean = clean[first_brace:last_brace + 1]
-
-    return clean
-
-
-class OpenAIProvider(LLMProvider):
-    """OpenAI API provider."""
-
-    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, base_url: Optional[str] = None):
-        self.api_key = api_key or settings.OPENAI_API_KEY
-        self.base_url = base_url or "https://api.openai.com/v1"
-        self.model = model or getattr(settings, "OPENAI_MODEL", "gpt-4o-mini")
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
+        self.api_key = api_key or settings.GEMINI_API_KEY
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+        self.model = model or getattr(settings, "GEMINI_MODEL", "gemini-2.0-flash")
 
     async def generate(
         self,
@@ -49,7 +28,7 @@ class OpenAIProvider(LLMProvider):
         if not self.api_key:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI API key is missing. Please configure OPENAI_API_KEY in your environment.",
+                detail="Gemini API key is missing. Please configure GEMINI_API_KEY in your environment.",
             )
 
         messages = []
@@ -77,12 +56,12 @@ class OpenAIProvider(LLMProvider):
         except httpx.HTTPStatusError as e:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"OpenAI API error ({e.response.status_code}): {e.response.text[:200]}",
+                detail=f"Gemini API error ({e.response.status_code}): {e.response.text[:200]}",
             )
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"OpenAI connection error: {str(e)}",
+                detail=f"Gemini connection error: {str(e)}",
             )
 
     async def generate_structured(
@@ -112,7 +91,7 @@ class OpenAIProvider(LLMProvider):
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to parse structured AI output from OpenAI: {str(e)}. Raw output: {clean_json[:200]}",
+                detail=f"Failed to parse structured AI output from Gemini: {str(e)}. Raw output: {clean_json[:200]}",
             )
 
     async def generate_conversation(
@@ -125,7 +104,7 @@ class OpenAIProvider(LLMProvider):
         if not self.api_key:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="OpenAI API key is missing. Please configure OPENAI_API_KEY in your environment.",
+                detail="Gemini API key is missing. Please configure GEMINI_API_KEY in your environment.",
             )
 
         all_messages = []
@@ -153,10 +132,10 @@ class OpenAIProvider(LLMProvider):
         except httpx.HTTPStatusError as e:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"OpenAI API error ({e.response.status_code}): {e.response.text[:200]}",
+                detail=f"Gemini API error ({e.response.status_code}): {e.response.text[:200]}",
             )
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"OpenAI connection error: {str(e)}",
+                detail=f"Gemini connection error: {str(e)}",
             )
