@@ -37,6 +37,44 @@ const statusColors: Record<VocabularyStatus, { bg: string; text: string; label: 
   struggling: { bg: 'bg-red-100', text: 'text-red-700', label: 'Struggling' },
 }
 
+function getLearningErrorMessage(error: unknown): { title: string; message: string } {
+  const axiosError = error as {
+    response?: {
+      status?: number
+      data?: {
+        detail?: string
+      }
+    }
+    message?: string
+  }
+
+  const status = axiosError?.response?.status
+  const detail = axiosError?.response?.data?.detail
+
+  if (status === 503 || (typeof detail === 'string' && detail.toLowerCase().includes('mock mode'))) {
+    return {
+      title: 'Learning content unavailable',
+      message:
+        typeof detail === 'string' && detail.trim().length > 0
+          ? detail
+          : "This word isn't available in local demo mode. Configure an active AI provider to generate learning content for new words.",
+    }
+  }
+
+  if (typeof detail === 'string' && detail.trim().length > 0) {
+    return {
+      title: 'Failed to load learning content',
+      message: detail,
+    }
+  }
+
+  return {
+    title: 'Failed to load learning content',
+    message:
+      'Could not load or generate the AI learning material for this word. Please check your connection and try again.',
+  }
+}
+
 export function LearnPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -79,6 +117,14 @@ export function LearnPage() {
   }
 
   if (error || !vocab) {
+    const { title, message } = error
+      ? getLearningErrorMessage(error)
+      : {
+          title: 'Failed to load learning content',
+          message:
+            'Could not load or generate the AI learning material for this word. Please check your connection and try again.',
+        }
+
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
@@ -90,8 +136,8 @@ export function LearnPage() {
             <span>Back to Vocabulary</span>
           </Link>
           <ErrorState
-            title="Failed to load learning content"
-            message="Could not load or generate the AI learning material for this word. Please check your connection and try again."
+            title={title}
+            message={message}
             onRetry={() => refetch()}
           />
         </div>

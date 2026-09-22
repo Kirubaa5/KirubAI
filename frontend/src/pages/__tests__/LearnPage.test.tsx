@@ -158,6 +158,46 @@ describe('LearnPage', () => {
     })
   })
 
+  it('renders clear mock-mode message when word is not available in mock mode (503)', async () => {
+    const mockError = {
+      response: {
+        status: 503,
+        data: {
+          detail:
+            "Detailed AI vocabulary content for 'xylophone' is not available in mock mode. Please configure an active LLM provider (OpenAI / Gemini / OpenRouter).",
+        },
+      },
+    }
+    vi.mocked(vocabularyApi.getLearningContent).mockRejectedValueOnce(mockError)
+
+    renderLearnPage('vocab-xylophone')
+
+    await waitFor(() => {
+      expect(screen.getByText(/learning content unavailable/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/not available in mock mode/i)
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('renders custom backend detail message when provided on error', async () => {
+    const mockError = {
+      response: {
+        status: 400,
+        data: {
+          detail: 'Custom vocabulary validation error message from backend.',
+        },
+      },
+    }
+    vi.mocked(vocabularyApi.getLearningContent).mockRejectedValueOnce(mockError)
+
+    renderLearnPage('vocab-custom-err')
+
+    await waitFor(() => {
+      expect(screen.getByText('Custom vocabulary validation error message from backend.')).toBeInTheDocument()
+    })
+  })
+
   it('renders full word explanation and lexical data correctly', async () => {
     vi.mocked(vocabularyApi.getLearningContent).mockResolvedValueOnce(mockVocabulary)
 
