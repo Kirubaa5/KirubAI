@@ -1,7 +1,7 @@
 import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
-from typing import List
+from typing import List, Union
 
 
 def _normalize_database_url(url: str) -> str:
@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # CORS — accepts a JSON list or comma-separated string from env
-    CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: Union[List[str], str] = ["http://localhost:5173", "http://localhost:3000"]
 
     # LLM
     LLM_PROVIDER: str = "mock"  # mock | openai | gemini | openrouter
@@ -44,8 +44,15 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):  # noqa: N805
-        """Accept comma-separated string from environment variables."""
+        """Accept JSON list or comma-separated string from environment variables."""
         if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
