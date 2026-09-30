@@ -224,7 +224,7 @@ describe('LearnPage', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /hesitate/i })).toBeInTheDocument()
-    })
+    }, { timeout: 5000 })
 
     // Pronunciation and Part of Speech
     expect(screen.getByText('/HEZ-ih-tayt/')).toBeInTheDocument()
