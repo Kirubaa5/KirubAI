@@ -1,10 +1,10 @@
 import json
-from typing import TypeVar, Type, List, Dict, Optional
+from typing import TypeVar, Type, List, Dict, Any, Optional
 from pydantic import BaseModel
 import httpx
 from fastapi import HTTPException, status
 from ai.provider import LLMProvider
-from ai.openai_provider import extract_json_payload
+from ai.openai_provider import extract_json_payload, format_schema_structure
 from config import settings
 
 T = TypeVar("T", bound=BaseModel)
@@ -14,7 +14,7 @@ class GeminiProvider(LLMProvider):
     """Google Gemini provider via OpenAI-compatible endpoint."""
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
-        self.api_key = api_key or settings.GEMINI_API_KEY
+        self.api_key = api_key if api_key is not None else settings.GEMINI_API_KEY
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
         self.model = model or getattr(settings, "GEMINI_MODEL", "gemini-2.0-flash")
 
@@ -23,7 +23,8 @@ class GeminiProvider(LLMProvider):
         prompt: str,
         system_prompt: Optional[str] = None,
         temperature: float = 0.7,
-        max_tokens: int = 1000,
+        max_tokens: int = 1500,
+        response_format: Optional[Dict[str, Any]] = None,
     ) -> str:
         if not self.api_key:
             raise HTTPException(
@@ -38,14 +39,17 @@ class GeminiProvider(LLMProvider):
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
+            "x-goog-api-key": self.api_key,
             "Content-Type": "application/json",
         }
-        payload = {
+        payload: Dict[str, Any] = {
             "model": self.model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        if response_format:
+            payload["response_format"] = response_format
 
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -58,6 +62,8 @@ class GeminiProvider(LLMProvider):
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Gemini API error ({e.response.status_code}): {e.response.text[:200]}",
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -71,27 +77,56 @@ class GeminiProvider(LLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
     ) -> T:
-        schema_json = json.dumps(response_schema.model_json_schema())
+        schema_guideline = format_schema_structure(response_schema)
         augmented_prompt = (
             f"{prompt}\n\n"
-            f"Respond ONLY with valid JSON matching this schema:\n{schema_json}"
+            f"Output requirements:\n"
+            f"{schema_guideline}\n\n"
+            f"CRITICAL INSTRUCTIONS:\n"
+            f"1. Return ONLY a single valid JSON object containing the required keys and real data values.\n"
+            f"2. Do NOT output a JSON schema, schema metadata ('type', 'properties', 'description'), or wrapper keys.\n"
+            f"3. Do NOT include markdown explanations or conversational text before or after the JSON."
         )
 
         content = await self.generate(
             prompt=augmented_prompt,
-            system_prompt=system_prompt or "You are an expert English language educator. Return only pure JSON.",
+            system_prompt=system_prompt or "You are an expert English language educator. Return only pure JSON containing the requested data.",
             temperature=temperature,
+            max_tokens=2000,
+            response_format={"type": "json_object"},
         )
 
         clean_json = extract_json_payload(content)
 
         try:
             parsed = json.loads(clean_json)
-            return response_schema.model_validate(parsed)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Failed to parse structured AI output from Gemini: {str(e)}. Raw output: {clean_json[:200]}",
+                detail=f"Failed to parse structured AI output from Gemini as valid JSON: {str(e)}. Raw output: {clean_json[:200]}",
+            )
+
+        if not isinstance(parsed, dict):
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Gemini returned non-object JSON (expected JSON object). Raw output: {clean_json[:200]}",
+            )
+
+        # 1. Direct validation against Pydantic schema
+        try:
+            return response_schema.model_validate(parsed)
+        except Exception as direct_err:
+            # 2. Check if output is wrapped in a container key (e.g. 'data', 'result', 'properties', 'output')
+            for wrapper_key in ("data", "result", "response", "output", "properties", response_schema.__name__.lower()):
+                if wrapper_key in parsed and isinstance(parsed[wrapper_key], dict):
+                    try:
+                        return response_schema.model_validate(parsed[wrapper_key])
+                    except Exception:
+                        pass
+
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Failed to parse structured AI output from Gemini: {str(direct_err)}. Raw output: {clean_json[:200]}",
             )
 
     async def generate_conversation(
@@ -114,6 +149,7 @@ class GeminiProvider(LLMProvider):
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
+            "x-goog-api-key": self.api_key,
             "Content-Type": "application/json",
         }
         payload = {
@@ -134,6 +170,8 @@ class GeminiProvider(LLMProvider):
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Gemini API error ({e.response.status_code}): {e.response.text[:200]}",
             )
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
