@@ -11,9 +11,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col text-gray-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen bg-gray-50 flex flex-col text-gray-900 antialiased">
       {/* 1. Desktop Fixed Sidebar */}
-      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 z-30">
+      <div className="hidden lg:flex lg:w-[260px] lg:flex-col lg:fixed lg:inset-y-0 z-30">
         <Sidebar />
       </div>
 
@@ -24,7 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       />
 
       {/* 3. Main Content Wrapper */}
-      <div className="lg:pl-64 flex flex-col flex-1 min-w-0 transition-all">
+      <div className="lg:pl-[260px] flex flex-col flex-1 min-w-0">
         <Header onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
 
         <main className="flex-1 w-full max-w-full overflow-x-hidden focus:outline-hidden">

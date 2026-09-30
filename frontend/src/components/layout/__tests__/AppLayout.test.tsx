@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { AppLayout } from '../AppLayout'
 import { useAuthStore } from '@/stores/authStore'
 
-describe('AppLayout & Navigation Redesign', () => {
+describe('AppLayout & Responsive Navigation Shell', () => {
   beforeEach(() => {
     // Reset auth store before each test
     useAuthStore.setState({
@@ -14,7 +14,7 @@ describe('AppLayout & Navigation Redesign', () => {
     })
   })
 
-  it('renders KirubAI branding and navigation sections on desktop', () => {
+  it('renders KirubAI branding, navigation sections, and all 12 destinations on desktop', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppLayout>
@@ -27,13 +27,13 @@ describe('AppLayout & Navigation Redesign', () => {
     expect(screen.getAllByText('KirubAI').length).toBeGreaterThan(0)
     expect(screen.getByText('Vocabulary Mastery')).toBeInTheDocument()
 
-    // Check navigation section categories
+    // Check 4 navigation section titles
     expect(screen.getByText('Primary')).toBeInTheDocument()
     expect(screen.getByText('Learn & Practice')).toBeInTheDocument()
     expect(screen.getByText('Insights')).toBeInTheDocument()
     expect(screen.getByText('Tools')).toBeInTheDocument()
 
-    // Check critical navigation links
+    // Check all 12 navigation destinations
     expect(screen.getAllByText('Home').length).toBeGreaterThan(0)
     expect(screen.getByText('Daily Plan')).toBeInTheDocument()
     expect(screen.getByText('Use My Vocab')).toBeInTheDocument()
@@ -47,11 +47,11 @@ describe('AppLayout & Navigation Redesign', () => {
     expect(screen.getByText('Knowledge Base')).toBeInTheDocument()
     expect(screen.getByText('Export Decks')).toBeInTheDocument()
 
-    // Check main page content
+    // Check children content
     expect(screen.getByText('Page Content')).toBeInTheDocument()
   })
 
-  it('highlights the active route based on current path', () => {
+  it('highlights the active route based on the current path', () => {
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
         <AppLayout>
@@ -65,7 +65,20 @@ describe('AppLayout & Navigation Redesign', () => {
     expect(dashboardLink.className).toContain('bg-blue-50')
   })
 
-  it('displays user profile and logout button when authenticated', () => {
+  it('renders unauthenticated state with Login and Sign Up buttons', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AppLayout>
+          <div>Public Content</div>
+        </AppLayout>
+      </MemoryRouter>
+    )
+
+    expect(screen.getAllByRole('link', { name: /login/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: /sign up/i }).length).toBeGreaterThan(0)
+  })
+
+  it('displays user profile, metrics, and triggers logout when authenticated', () => {
     useAuthStore.setState({
       user: {
         id: '123',
@@ -91,14 +104,14 @@ describe('AppLayout & Navigation Redesign', () => {
     expect(screen.getByText('learner@example.com')).toBeInTheDocument()
     expect(screen.getAllByText(/5d streak/i).length).toBeGreaterThan(0)
 
-    const logoutBtn = screen.getByRole('button', { name: /log out/i })
+    const logoutBtn = screen.getByRole('button', { name: /log out of account/i })
     expect(logoutBtn).toBeInTheDocument()
 
     fireEvent.click(logoutBtn)
     expect(useAuthStore.getState().isAuthenticated).toBe(false)
   })
 
-  it('opens and closes the mobile navigation drawer via hamburger button and close button', () => {
+  it('opens and closes mobile drawer via hamburger and close button', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppLayout>
@@ -114,7 +127,7 @@ describe('AppLayout & Navigation Redesign', () => {
     const menuButton = screen.getByRole('button', { name: /open navigation menu/i })
     fireEvent.click(menuButton)
 
-    // Drawer should now be visible
+    // Drawer is now open
     const drawer = screen.getByRole('dialog', { name: /navigation menu/i })
     expect(drawer).toBeInTheDocument()
 
@@ -125,22 +138,40 @@ describe('AppLayout & Navigation Redesign', () => {
     expect(screen.queryByRole('dialog', { name: /navigation menu/i })).not.toBeInTheDocument()
   })
 
-  it('closes the mobile navigation drawer when Escape key is pressed', () => {
+  it('closes mobile drawer when Escape key is pressed', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AppLayout>
-          <div>Test Content</div>
+          <div>Escape Test Content</div>
         </AppLayout>
       </MemoryRouter>
     )
 
-    // Open mobile menu
     const menuButton = screen.getByRole('button', { name: /open navigation menu/i })
     fireEvent.click(menuButton)
     expect(screen.getByRole('dialog', { name: /navigation menu/i })).toBeInTheDocument()
 
-    // Press Escape
     fireEvent.keyDown(window, { key: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: /navigation menu/i })).not.toBeInTheDocument()
+  })
+
+  it('closes mobile drawer when clicking a navigation link inside the drawer', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AppLayout>
+          <div>Link Click Content</div>
+        </AppLayout>
+      </MemoryRouter>
+    )
+
+    const menuButton = screen.getByRole('button', { name: /open navigation menu/i })
+    fireEvent.click(menuButton)
+    expect(screen.getByRole('dialog', { name: /navigation menu/i })).toBeInTheDocument()
+
+    // Click link inside drawer
+    const drawerLinks = screen.getAllByRole('link', { name: /vocabulary/i })
+    fireEvent.click(drawerLinks[drawerLinks.length - 1])
+
     expect(screen.queryByRole('dialog', { name: /navigation menu/i })).not.toBeInTheDocument()
   })
 })
