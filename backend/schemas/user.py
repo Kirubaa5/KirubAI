@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from datetime import date, datetime
 from typing import Optional
 
@@ -6,6 +6,20 @@ from typing import Optional
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str = Field(..., min_length=1, max_length=100)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v):
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
+
+    @field_validator("full_name", mode="before")
+    @classmethod
+    def normalize_full_name(cls, v):
+        if isinstance(v, str):
+            return v.strip()
+        return v
 
 
 class UserCreate(UserBase):
@@ -17,6 +31,13 @@ class UserUpdate(BaseModel):
     english_level: Optional[str] = Field(None, max_length=20)
     daily_goal: Optional[int] = Field(None, ge=1, le=100)
     timezone: Optional[str] = Field(None, max_length=50)
+
+    @field_validator("full_name", mode="before")
+    @classmethod
+    def normalize_full_name(cls, v):
+        if isinstance(v, str):
+            return v.strip()
+        return v
 
 
 class UserResponse(UserBase):
@@ -44,7 +65,14 @@ class UserProfile(UserResponse):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=1)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email(cls, v):
+        if isinstance(v, str):
+            return v.strip().lower()
+        return v
 
 
 class TokenResponse(BaseModel):

@@ -51,6 +51,48 @@ def test_login_wrong_password(client, test_user):
         },
     )
     assert response.status_code == 401
+    assert "Invalid email or password" in response.json()["detail"]
+
+
+def test_login_unknown_email(client):
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "nonexistent_user_999@example.com",
+            "password": "password123",
+        },
+    )
+    assert response.status_code == 401
+    assert "Invalid email or password" in response.json()["detail"]
+
+
+def test_email_normalization_signup_and_login(client):
+    # Register with mixed case and leading/trailing whitespace
+    reg_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "  NormalizedUser@Example.COM  ",
+            "password": "securepassword123",
+            "full_name": "  Normalized Name  ",
+        },
+    )
+    assert reg_response.status_code == 201
+    reg_data = reg_response.json()
+    assert reg_data["user"]["email"] == "normalizeduser@example.com"
+    assert reg_data["user"]["full_name"] == "Normalized Name"
+
+    # Login with different casing and whitespace
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "  NORMALIZEDUSER@example.com ",
+            "password": "securepassword123",
+        },
+    )
+    assert login_response.status_code == 200
+    login_data = login_response.json()
+    assert login_data["user"]["id"] == reg_data["user"]["id"]
+    assert "access_token" in login_data
 
 
 def test_get_me_authenticated(client, auth_headers, test_user):
@@ -62,4 +104,12 @@ def test_get_me_authenticated(client, auth_headers, test_user):
 
 def test_get_me_unauthorized(client):
     response = client.get("/api/v1/auth/me")
+    assert response.status_code == 401
+
+
+def test_get_me_invalid_token(client):
+    response = client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": "Bearer invalid_token_format_12345"},
+    )
     assert response.status_code == 401

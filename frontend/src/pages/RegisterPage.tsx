@@ -34,12 +34,25 @@ export function RegisterPage() {
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       setServerError(null)
-      const data = await authApi.register(values)
+      const data = await authApi.register({
+        full_name: values.full_name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+      })
       setToken(data.access_token)
       setUser(data.user)
       navigate('/vocabulary')
     } catch (err: any) {
-      setServerError(err.response?.data?.detail || 'Failed to create account. Please try again.')
+      const detail = err.response?.data?.detail
+      if (typeof detail === 'string') {
+        setServerError(detail)
+      } else if (Array.isArray(detail) && detail[0]?.msg) {
+        setServerError(detail[0].msg)
+      } else if (err.message === 'Network Error' || !err.response) {
+        setServerError('Unable to connect to the server. Please check your connection and try again.')
+      } else {
+        setServerError('Failed to create account. Please try again.')
+      }
     }
   }
 

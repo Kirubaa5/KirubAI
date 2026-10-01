@@ -33,12 +33,24 @@ export function LoginPage() {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       setServerError(null)
-      const data = await authApi.login(values)
+      const data = await authApi.login({
+        email: values.email.trim(),
+        password: values.password,
+      })
       setToken(data.access_token)
       setUser(data.user)
       navigate('/vocabulary')
     } catch (err: any) {
-      setServerError(err.response?.data?.detail || 'Failed to login. Please try again.')
+      const detail = err.response?.data?.detail
+      if (typeof detail === 'string') {
+        setServerError(detail)
+      } else if (Array.isArray(detail) && detail[0]?.msg) {
+        setServerError(detail[0].msg)
+      } else if (err.message === 'Network Error' || !err.response) {
+        setServerError('Unable to connect to the server. Please check your connection and try again.')
+      } else {
+        setServerError('Failed to login. Please check your credentials and try again.')
+      }
     }
   }
 

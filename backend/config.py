@@ -9,8 +9,11 @@ def _normalize_database_url(url: str) -> str:
     """Normalize database URL for SQLAlchemy compatibility.
 
     Supabase and some providers use 'postgres://' which SQLAlchemy 2.x
-    does not accept; it must be 'postgresql://'.
+    does not accept; it must be 'postgresql://'. Also handles whitespace/quotes.
     """
+    if not url:
+        return url
+    url = url.strip().strip('"').strip("'")
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
     return url
@@ -45,16 +48,20 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):  # noqa: N805
-        """Accept JSON list or comma-separated string from environment variables."""
+        """Accept JSON list or comma-separated string from environment variables, normalizing each origin."""
         if isinstance(v, str):
             v = v.strip()
             if v.startswith("[") and v.endswith("]"):
                 import json
                 try:
-                    return json.loads(v)
+                    parsed = json.loads(v)
+                    if isinstance(parsed, list):
+                        return [str(o).strip().rstrip("/") for o in parsed if str(o).strip()]
                 except Exception:
                     pass
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
+            return [origin.strip().rstrip("/") for origin in v.split(",") if origin.strip()]
+        if isinstance(v, list):
+            return [str(origin).strip().rstrip("/") for origin in v if str(origin).strip()]
         return v
 
     @field_validator("DATABASE_URL", mode="after")
