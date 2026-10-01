@@ -15,6 +15,7 @@ from main import app
 from models.user import User
 from models.vocabulary import Vocabulary
 from utils.security import hash_password, create_access_token
+from config import settings
 
 # Use in-memory SQLite database for tests
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -25,6 +26,15 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def default_mock_llm_provider():
+    """Ensure test suite runs against deterministic mock provider by default."""
+    original_provider = settings.LLM_PROVIDER
+    settings.LLM_PROVIDER = "mock"
+    yield
+    settings.LLM_PROVIDER = original_provider
 
 
 @pytest.fixture(autouse=True)
